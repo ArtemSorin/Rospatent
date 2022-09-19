@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+//import 'patent_api.dart' as api;
 
 void main() {
+  // api.FindParams params = api.FindParams();
+  // params.formal = "ракета";
+  // api.PatentAPI test = api.PatentAPI();
+  // test.find(params);
   runApp(const MyApp());
 }
 
