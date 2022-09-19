@@ -10,22 +10,50 @@ class PatentAPI {
   };
 
   Future<List<Patent>?> find(FindParams params) async {
-    String json = jsonEncode(params.getJson());
+    String paramsJson = jsonEncode(params.getJson());
 
     http.Response res = await http.post(Uri.parse("${url}search"),
-        headers: headers, body: json);
+        headers: headers, body: paramsJson);
 
-    String data = "";
+    String responseJson = "";
     if (res.statusCode == 200) {
-      data = res.body;
-      return null;
+      Map data = json.decode(utf8.decode(res.bodyBytes));
+
+      List<Patent>? patents = <Patent>[];
+      for (var solution in data["hits"]) {
+        Map snippet = solution["snippet"] as Map;
+        Patent patent = Patent(
+            snippet["title"] ?? "",
+            snippet["description"] ?? "",
+            snippet["lang"] ?? "",
+            snippet["applicant"] ?? "",
+            snippet["inventor"] ?? "",
+            snippet["patantee"] ?? "",
+            (snippet["classification"] ?? {})["ipc"] ?? "",
+            (snippet["classification"] ?? {})["cpc"] ?? "");
+        patents.add(patent);
+      }
+
+      return patents;
     } else {
       return null;
     }
   }
 }
 
-class Patent {}
+class Patent {
+  String title = "";
+  String desc = "";
+  String lang = "ru";
+  String applicant = "";
+  String inventor = "";
+  String patantee = "";
+  String ipc = "";
+  String cpc = "";
+
+  Patent(this.title, this.desc, this.lang, this.applicant, this.inventor,
+      this.patantee, this.ipc, this.cpc);
+}
 
 class FindParams {
   String? formal;
