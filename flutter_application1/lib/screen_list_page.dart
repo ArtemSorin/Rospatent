@@ -10,7 +10,7 @@ class ScreenA extends StatefulWidget {
 }
 
 class _ScreenA extends State<ScreenA> {
-  int _value = 1;
+  int sortValue = 1;
   bool isCheckedFirst = false;
   bool isCheckedSecond = false;
   TextEditingController searchTextController = TextEditingController();
@@ -37,7 +37,7 @@ class _ScreenA extends State<ScreenA> {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: Text(
-                'Сначала показывать',
+                'Сортировать по',
               ),
             ),
             Row(
@@ -46,30 +46,42 @@ class _ScreenA extends State<ScreenA> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   child: DropdownButton<int>(
-                    value: _value,
+                    value: sortValue,
                     items: const [
                       DropdownMenuItem<int>(
                         value: 1,
                         child: Text(
-                          "Second",
+                          "Релевантности",
                         ),
                       ),
                       DropdownMenuItem<int>(
                         value: 2,
                         child: Text(
-                          "First",
+                          "Дате публикации↑",
                         ),
                       ),
                       DropdownMenuItem<int>(
                         value: 3,
                         child: Text(
-                          "Th",
+                          "Дате публикации↓",
+                        ),
+                      ),
+                      DropdownMenuItem<int>(
+                        value: 4,
+                        child: Text(
+                          "Дате регистрации↑",
+                        ),
+                      ),
+                      DropdownMenuItem<int>(
+                        value: 5,
+                        child: Text(
+                          "Дате регистрации↓",
                         ),
                       ),
                     ],
                     onChanged: (value) {
                       setState(() {
-                        _value = value!;
+                        sortValue = value!;
                       });
                     },
                   ),
@@ -142,9 +154,11 @@ class _ScreenA extends State<ScreenA> {
               child: ElevatedButton(
                 onPressed: () {
                   model.SearchPageModel.onSearchClicked(
-                      searchTextController.text,
-                      patentee: patenteeTextController.text,
-                      authors: authorsTextController.text);
+                    searchTextController.text,
+                    sortingTypes: sortValue - 1,
+                    patentee: patenteeTextController.text,
+                    authors: authorsTextController.text,
+                  );
 
                   //Route route =
                   //MaterialPageRoute(builder: (context) => SecondHome());
