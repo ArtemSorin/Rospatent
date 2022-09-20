@@ -10,7 +10,7 @@ class PatentAPI {
   };
 
   Future<List<Patent>?> find(FindParams params) async {
-    String paramsJson = jsonEncode(params.getJson());
+    String paramsJson = params.getJson();
 
     http.Response res = await http.post(Uri.parse("${url}search"),
         headers: headers, body: paramsJson);
@@ -87,12 +87,12 @@ class FindParams {
   bool includeFacets = false;
   Filter? filter;
 
-  Map<String, String> getJson() {
-    Map<String, String> data = <String, String>{};
+  String getJson() {
+    Map<String, Object> data = <String, Object>{};
     if (formal != null) data["q"] = formal as String;
     if (informal != null) data["qn"] = informal as String;
-    if (informal != null) data["limit"] = limit.toString();
-    if (informal != null) data["offset"] = offset.toString();
+    if (limit != null) data["limit"] = limit.toString();
+    if (offset != null) data["offset"] = offset.toString();
 
     if (sort != null) {
       String? sortStr;
@@ -124,14 +124,14 @@ class FindParams {
     if (groupBy != null) data["group_by"] = "family:${groupBy.toString()}";
 
     if (includeFacets) {
-      data["include_facets"] = "1";
+      data["include_facets"] = 1;
     } else {
-      data["include_facets"] = "0";
+      data["include_facets"] = 0;
     }
 
     if (filter != null) data["filter"] = filter!.getJson();
 
-    return data;
+    return jsonEncode(data);
   }
 }
 
