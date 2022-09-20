@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth/secrets.dart' as secrets;
 
+PatentAPI api = PatentAPI();
+
 class PatentAPI {
   String url = "https://searchplatform.rospatent.gov.ru/patsearch/v0.2/";
   Map<String, String> headers = {
@@ -312,7 +314,7 @@ class FindParams {
       data["include_facets"] = 0;
     }
 
-    if (filter != null) data["filter"] = filter!.getJson();
+    if (filter != null) data["filter"] = json.decode(filter!.getJson());
 
     return jsonEncode(data);
   }

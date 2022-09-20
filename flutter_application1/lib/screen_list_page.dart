@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'list_page.dart';
+import 'models/search_page_model.dart' as model;
 
 class ScreenA extends StatefulWidget {
   const ScreenA({Key? key}) : super(key: key);
@@ -12,6 +13,9 @@ class _ScreenA extends State<ScreenA> {
   int _value = 1;
   bool isCheckedFirst = false;
   bool isCheckedSecond = false;
+  TextEditingController searchTextController = TextEditingController();
+  TextEditingController patenteeTextController = TextEditingController();
+  TextEditingController authorsTextController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -20,12 +24,13 @@ class _ScreenA extends State<ScreenA> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
               child: TextField(
-                decoration: InputDecoration(
+                controller: searchTextController,
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  hintText: 'Поиск по названию',
+                  hintText: 'Поиск по тексту',
                 ),
               ),
             ),
@@ -113,9 +118,10 @@ class _ScreenA extends State<ScreenA> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: TextFormField(
+                controller: authorsTextController,
                 decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
-                  labelText: 'Заявитель',
+                  labelText: 'Авторы (ФИО через запятую)',
                 ),
               ),
             ),
@@ -125,18 +131,20 @@ class _ScreenA extends State<ScreenA> {
                 vertical: 10,
               ),
               child: TextFormField(
+                controller: patenteeTextController,
                 decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
-                  labelText: 'Патентообладатель',
+                  labelText: 'Патентообладатели (ФИО через запятую)',
                 ),
               ),
             ),
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  //api.FindParams params = new api.FindParams();
-                  //params.formal = "патент";
-                  //params.informal = "патент";
+                  model.SearchPageModel.onSearchClicked(
+                      searchTextController.text,
+                      patentee: patenteeTextController.text,
+                      authors: authorsTextController.text);
 
                   //Route route =
                   //MaterialPageRoute(builder: (context) => SecondHome());
