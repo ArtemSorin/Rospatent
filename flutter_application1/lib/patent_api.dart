@@ -28,7 +28,7 @@ class PatentAPI {
             snippet["lang"] ?? "",
             snippet["applicant"] ?? "",
             snippet["inventor"] ?? "",
-            snippet["patantee"] ?? "",
+            snippet["patentee"] ?? "",
             (snippet["classification"] ?? {})["ipc"] ?? "",
             (snippet["classification"] ?? {})["cpc"] ?? "");
         patents.add(patent);
@@ -76,7 +76,7 @@ class PatentAPI {
           (data["common"]["application"]["filing_date"] as String)
               .replaceAll('.', '-'));
 
-      for (var drt in data["drawings"]) {
+      for (var drt in data["drawings"] ?? []) {
         patent.drawings.add(Drawing(
             drt["url"], int.parse(drt["width"]), int.parse(drt["height"])));
       }
@@ -122,11 +122,50 @@ class PatentAPI {
           (data["common"]["application"]["filing_date"] as String)
               .replaceAll('.', '-'));
 
-      for (var drt in data["drawings"]) {
+      for (var drt in data["drawings"] ?? []) {
         patent.drawings.add(Drawing(
             drt["url"], int.parse(drt["width"]), int.parse(drt["height"])));
       }
     }
+  }
+
+  Future<List<Patent>> findSimilarByPatent(Patent example, int count) async {
+    List<Patent> results = [];
+    String id = example.id;
+    String paramsJson =
+        '{"type_search": "id_search", "pat_id": "$id", "count": $count}';
+
+    http.Response res = await http.post(Uri.parse("${url}similar_search"),
+        headers: headers, body: paramsJson);
+
+    if (res.statusCode == 200) {
+      Map data = json.decode(utf8.decode(res.bodyBytes));
+      for (var patent in data["data"]) {
+        Patent p = Patent.fromJson(patent);
+        results.add(p);
+      }
+    }
+
+    return results;
+  }
+
+  Future<List<Patent>> findSimilarById(String id, int count) async {
+    List<Patent> results = [];
+    String paramsJson =
+        '{"type_search": "id_search", "pat_id": "$id", "count": $count}';
+
+    http.Response res = await http.post(Uri.parse("${url}similar_search"),
+        headers: headers, body: paramsJson);
+
+    if (res.statusCode == 200) {
+      Map data = json.decode(utf8.decode(res.bodyBytes));
+      for (var patent in data["data"]) {
+        Patent p = Patent.fromJson(patent);
+        results.add(p);
+      }
+    }
+
+    return results;
   }
 }
 
@@ -155,11 +194,56 @@ class Patent {
 
   PatentSnippet? snippet;
 
-  Patent(this.id, title, desc, lang, applicant, inventor, patantee, ipc, cpc) {
+  Patent(this.id, title, desc, lang, applicant, inventor, patentee, ipc, cpc) {
     snippet = PatentSnippet(
-        title, desc, lang, applicant, inventor, patantee, ipc, cpc);
+        title, desc, lang, applicant, inventor, patentee, ipc, cpc);
   }
   Patent.empty();
+  Patent.fromJson(Map data) {
+    id = data["id"] ?? "";
+    dataset = data["dataset"] ?? "";
+    index = data["index"] ?? "";
+    documentNumber = int.parse(data["common"]["document_number"] ?? "-1");
+    number = data["common"]["application"]["number"] ?? "";
+    kind = data["common"]["kind"] ?? "";
+    guid = data["common"]["guid"] ?? "";
+    for (var language in (data["biblio"] as Map).keys) {
+      title[language] = data["biblio"][language]["title"] ?? "";
+      desc[language] = (data["description"] ?? {})[language] ?? "";
+      abstract[language] = (data["abstract"] ?? {})[language] ?? "";
+      claims[language] = (data["claims"] ?? {})[language] ?? "";
+
+      for (var inv in (data["biblio"][language]["inventor"] ?? [])) {
+        if (inventor[language] == null) inventor[language] = [];
+        inventor[language]!.add(inv["name"]);
+      }
+      for (var pat in (data["biblio"][language]["patentee"] ?? [])) {
+        if (patentee[language] == null) patentee[language] = [];
+        patentee[language]!.add(pat["name"]);
+      }
+    }
+
+    snippet = PatentSnippet(
+        data["snippet"]["title"] ?? "",
+        data["snippet"]["description"] ?? "",
+        data["snippet"]["lang"] ?? "",
+        data["snippet"]["applicant"] ?? "",
+        data["snippet"]["inventor"] ?? "",
+        data["snippet"]["patentee"] ?? "",
+        (data["snippet"]["classification"] ?? {})["ipc"] ?? "",
+        (data["snippet"]["classification"] ?? {})["cpc"] ?? "");
+
+    publicationDate = DateTime.parse(
+        (data["common"]["publication_date"] as String).replaceAll('.', '-'));
+    filingDate = DateTime.parse(
+        (data["common"]["application"]["filing_date"] as String)
+            .replaceAll('.', '-'));
+
+    for (var drt in data["drawings"] ?? []) {
+      drawings.add(Drawing(
+          drt["url"], int.parse(drt["width"]), int.parse(drt["height"])));
+    }
+  }
 }
 
 class PatentSnippet {
@@ -168,12 +252,12 @@ class PatentSnippet {
   String lang = "ru";
   String applicant = "";
   String inventor = "";
-  String patantee = "";
+  String patentee = "";
   String ipc = "";
   String cpc = "";
 
   PatentSnippet(this.title, this.desc, this.lang, this.applicant, this.inventor,
-      this.patantee, this.ipc, this.cpc);
+      this.patentee, this.ipc, this.cpc);
 }
 
 class FindParams {

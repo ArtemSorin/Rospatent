@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
-//import 'patent_api.dart' as api;
+import 'patent_api.dart' as api;
 
 void main() {
+  api.PatentAPI test = api.PatentAPI();
+
+  api.Patent a = api.Patent.empty();
+  a.id = "RU134694U1_20131120";
+  test.findSimilarByPatent(a, 2);
+
   runApp(const MyApp());
 }
 
