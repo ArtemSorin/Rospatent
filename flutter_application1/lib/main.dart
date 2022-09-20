@@ -7,6 +7,7 @@ void main() {
   api.PatentAPI test = api.PatentAPI();
   List<api.Patent>? patents;
   test.find(params);
+
   runApp(const MyApp());
 }
 
