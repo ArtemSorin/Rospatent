@@ -3,9 +3,9 @@ import 'patent_api.dart' as api;
 
 void main() {
   api.FindParams params = api.FindParams();
-  params.formal = "ракета";
+  params.informal =
+      "Трансформатор, содержащий магнитопровод, размещенный в защитных контейнерах, отличающийся тем, что защитный контейнер выполнен из тонкостенного металла с зазором по наружному или внутреннему периметру";
   api.PatentAPI test = api.PatentAPI();
-  List<api.Patent>? patents;
   test.find(params);
 
   runApp(const MyApp());

@@ -15,7 +15,6 @@ class PatentAPI {
     http.Response res = await http.post(Uri.parse("${url}search"),
         headers: headers, body: paramsJson);
 
-    String responseJson = "";
     if (res.statusCode == 200) {
       Map data = json.decode(utf8.decode(res.bodyBytes));
 
@@ -23,6 +22,7 @@ class PatentAPI {
       for (var solution in data["hits"]) {
         Map snippet = solution["snippet"] as Map;
         Patent patent = Patent(
+            solution["id"] ?? "",
             snippet["title"] ?? "",
             snippet["description"] ?? "",
             snippet["lang"] ?? "",
@@ -39,9 +39,31 @@ class PatentAPI {
       return null;
     }
   }
+
+  Future<Patent?> getPatent(String id) async {
+    http.Response res =
+        await http.get(Uri.parse("${url}docs/${id}"), headers: headers);
+    if (res.statusCode == 200) {
+      return null;
+    } else {
+      return null;
+    }
+  }
 }
 
 class Patent {
+  String id = "";
+
+  int documentNumber = -1;
+  String number = "";
+  String kind = "";
+  String guid = "";
+  DateTime? publicationDate;
+  DateTime? filingDate;
+
+  String index = "";
+  String dataset = "";
+
   String title = "";
   String desc = "";
   String lang = "ru";
@@ -51,8 +73,8 @@ class Patent {
   String ipc = "";
   String cpc = "";
 
-  Patent(this.title, this.desc, this.lang, this.applicant, this.inventor,
-      this.patantee, this.ipc, this.cpc);
+  Patent(this.id, this.title, this.desc, this.lang, this.applicant,
+      this.inventor, this.patantee, this.ipc, this.cpc);
 }
 
 class FindParams {
@@ -107,7 +129,7 @@ class FindParams {
       data["include_facets"] = "0";
     }
 
-    if (informal != null) data["filter"] = informal as String;
+    if (filter != null) data["filter"] = filter!.getJson();
 
     return data;
   }
