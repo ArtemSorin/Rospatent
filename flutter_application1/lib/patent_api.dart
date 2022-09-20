@@ -42,9 +42,46 @@ class PatentAPI {
 
   Future<Patent?> getPatent(String id) async {
     http.Response res =
-        await http.get(Uri.parse("${url}docs/${id}"), headers: headers);
+        await http.get(Uri.parse("${url}docs/$id"), headers: headers);
     if (res.statusCode == 200) {
-      return null;
+      Map data = json.decode(utf8.decode(res.bodyBytes));
+
+      Patent patent = Patent.empty();
+      patent.id = data["id"];
+      patent.dataset = data["dataset"];
+      patent.index = data["index"];
+      patent.documentNumber = int.parse(data["common"]["document_number"]);
+      patent.number = data["common"]["application"]["number"];
+      patent.kind = data["common"]["kind"];
+      patent.guid = data["common"]["guid"];
+      for (var language in (data["biblio"] as Map).keys) {
+        patent.title[language] = data["biblio"][language]["title"];
+        patent.desc[language] = data["description"][language];
+        patent.abstract[language] = data["abstract"][language];
+        patent.claims[language] = data["claims"][language];
+
+        for (var inv in (data["biblio"][language]["inventor"] as List)) {
+          if (patent.inventor[language] == null) patent.inventor[language] = [];
+          patent.inventor[language]!.add(inv["name"]);
+        }
+        for (var pat in (data["biblio"][language]["patentee"] as List)) {
+          if (patent.patentee[language] == null) patent.patentee[language] = [];
+          patent.patentee[language]!.add(pat["name"]);
+        }
+      }
+
+      patent.publicationDate = DateTime.parse(
+          (data["common"]["publication_date"] as String).replaceAll('.', '-'));
+      patent.filingDate = DateTime.parse(
+          (data["common"]["application"]["filing_date"] as String)
+              .replaceAll('.', '-'));
+
+      for (var drt in data["drawings"]) {
+        patent.drawings.add(Drawing(
+            drt["url"], int.parse(drt["width"]), int.parse(drt["height"])));
+      }
+
+      return patent;
     } else {
       return null;
     }
@@ -64,6 +101,26 @@ class Patent {
   String index = "";
   String dataset = "";
 
+  Map<String, List<String>> inventor = {};
+  Map<String, List<String>> patentee = {};
+
+  Map<String, String> title = {};
+  Map<String, String> desc = {};
+  Map<String, String> abstract = {}; //Реферат
+  Map<String, String> claims = {}; //Формула
+
+  List<Drawing> drawings = [];
+
+  PatentSnippet? snippet;
+
+  Patent(this.id, title, desc, lang, applicant, inventor, patantee, ipc, cpc) {
+    snippet = PatentSnippet(
+        title, desc, lang, applicant, inventor, patantee, ipc, cpc);
+  }
+  Patent.empty();
+}
+
+class PatentSnippet {
   String title = "";
   String desc = "";
   String lang = "ru";
@@ -73,8 +130,8 @@ class Patent {
   String ipc = "";
   String cpc = "";
 
-  Patent(this.id, this.title, this.desc, this.lang, this.applicant,
-      this.inventor, this.patantee, this.ipc, this.cpc);
+  PatentSnippet(this.title, this.desc, this.lang, this.applicant, this.inventor,
+      this.patantee, this.ipc, this.cpc);
 }
 
 class FindParams {
@@ -358,6 +415,14 @@ class DateBounce {
         "${_date.year}${_date.month < 10 ? "0${_date.month}" : _date.month}${_date.day < 10 ? "0${_date.day}" : _date.day}\"}";
     return res;
   }
+}
+
+class Drawing {
+  String url = "";
+  int width = 0;
+  int height = 0;
+
+  Drawing(this.url, this.width, this.height);
 }
 
 enum SortingTypes { relevance, publicationA, publicationZ, filingA, filingZ }
