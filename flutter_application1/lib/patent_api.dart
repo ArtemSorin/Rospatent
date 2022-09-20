@@ -11,7 +11,7 @@ class PatentAPI {
     "Authorization": secrets.apiKey
   };
 
-  Future<List<Patent>?> find(FindParams params) async {
+  Future<SearchResult?> find(FindParams params) async {
     String paramsJson = params.getJson();
 
     http.Response res = await http.post(Uri.parse("${url}search"),
@@ -21,6 +21,8 @@ class PatentAPI {
       Map data = json.decode(utf8.decode(res.bodyBytes));
 
       List<Patent>? patents = <Patent>[];
+      SearchResult searchResult = SearchResult();
+
       for (var solution in data["hits"]) {
         Map snippet = solution["snippet"] as Map;
         Patent patent = Patent(
@@ -36,7 +38,10 @@ class PatentAPI {
         patents.add(patent);
       }
 
-      return patents;
+      searchResult.total = data["total"];
+      searchResult.available = data["available"];
+      searchResult.patents = patents;
+      return searchResult;
     } else {
       return null;
     }
@@ -271,6 +276,7 @@ class FindParams {
   GroupingTypes? groupBy;
   bool includeFacets = false;
   Filter? filter;
+  List<Dataset> datasets = [];
 
   String getJson() {
     Map<String, Object> data = <String, Object>{};
@@ -551,6 +557,20 @@ class Drawing {
   int height = 0;
 
   Drawing(this.url, this.width, this.height);
+}
+
+class Dataset {
+  String category = "";
+  String id = "";
+  String name = "";
+
+  Dataset(this.id, this.name, this.category);
+}
+
+class SearchResult {
+  int total = 0;
+  int available = 0;
+  List<Patent>? patents;
 }
 
 enum SortingTypes { relevance, publicationA, publicationZ, filingA, filingZ }

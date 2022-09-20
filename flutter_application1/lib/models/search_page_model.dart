@@ -1,6 +1,8 @@
 import '../patent_api.dart' as api;
 
 class SearchPageModel {
+  static api.SearchResult? patents;
+
   static void onSearchClicked(String text,
       {String? patentee, String? authors, int? sortingTypes}) async {
     api.FindParams params = api.FindParams();
@@ -34,6 +36,6 @@ class SearchPageModel {
       params.filter = filter;
     }
 
-    List<api.Patent>? patents = await api.api.find(params);
+    patents = await api.api.find(params);
   }
 }
