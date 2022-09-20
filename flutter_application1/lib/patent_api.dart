@@ -41,8 +41,8 @@ class PatentAPI {
   }
 
   Future<Patent?> getPatent(String id) async {
-    http.Response res =
-        await http.get(Uri.parse("${url}docs/$id"), headers: headers);
+    String address = "${url}docs/$id";
+    http.Response res = await http.get(Uri.parse(address), headers: headers);
     if (res.statusCode == 200) {
       Map data = json.decode(utf8.decode(res.bodyBytes));
 
@@ -84,6 +84,48 @@ class PatentAPI {
       return patent;
     } else {
       return null;
+    }
+  }
+
+  void fillPatent(Patent patent) async {
+    String address = "${url}docs/${patent.id}";
+    http.Response res = await http.get(Uri.parse(address), headers: headers);
+    if (res.statusCode == 200) {
+      Map data = json.decode(utf8.decode(res.bodyBytes));
+
+      patent.id = data["id"];
+      patent.dataset = data["dataset"];
+      patent.index = data["index"];
+      patent.documentNumber = int.parse(data["common"]["document_number"]);
+      patent.number = data["common"]["application"]["number"];
+      patent.kind = data["common"]["kind"];
+      patent.guid = data["common"]["guid"];
+      for (var language in (data["biblio"] as Map).keys) {
+        patent.title[language] = data["biblio"][language]["title"];
+        patent.desc[language] = data["description"][language];
+        patent.abstract[language] = data["abstract"][language];
+        patent.claims[language] = data["claims"][language];
+
+        for (var inv in (data["biblio"][language]["inventor"] as List)) {
+          if (patent.inventor[language] == null) patent.inventor[language] = [];
+          patent.inventor[language]!.add(inv["name"]);
+        }
+        for (var pat in (data["biblio"][language]["patentee"] as List)) {
+          if (patent.patentee[language] == null) patent.patentee[language] = [];
+          patent.patentee[language]!.add(pat["name"]);
+        }
+      }
+
+      patent.publicationDate = DateTime.parse(
+          (data["common"]["publication_date"] as String).replaceAll('.', '-'));
+      patent.filingDate = DateTime.parse(
+          (data["common"]["application"]["filing_date"] as String)
+              .replaceAll('.', '-'));
+
+      for (var drt in data["drawings"]) {
+        patent.drawings.add(Drawing(
+            drt["url"], int.parse(drt["width"]), int.parse(drt["height"])));
+      }
     }
   }
 }
@@ -240,7 +282,7 @@ class Filter {
         res += "\"${country![0]}\"";
       } else {
         for (String val in country!) {
-          res += "\"val\",";
+          res += "\"$val\",";
         }
         res = res.substring(0, res.length - 1);
       }
@@ -252,7 +294,7 @@ class Filter {
         res += "\"${kind![0]}\"";
       } else {
         for (String val in kind!) {
-          res += "\"val\",";
+          res += "\"$val\",";
         }
         res = res.substring(0, res.length - 1);
       }
@@ -264,7 +306,7 @@ class Filter {
         res += "\"${ipc![0]}\"";
       } else {
         for (String val in ipc!) {
-          res += "\"val\",";
+          res += "\"$val\",";
         }
         res = res.substring(0, res.length - 1);
       }
@@ -276,7 +318,7 @@ class Filter {
         res += "\"${ipcGroup![0]}\"";
       } else {
         for (String val in ipcGroup!) {
-          res += "\"val\",";
+          res += "\"$val\",";
         }
         res = res.substring(0, res.length - 1);
       }
@@ -288,7 +330,7 @@ class Filter {
         res += "\"${ipcSubclass![0]}\"";
       } else {
         for (String val in ipcSubclass!) {
-          res += "\"val\",";
+          res += "\"$val\",";
         }
         res = res.substring(0, res.length - 1);
       }
@@ -300,7 +342,7 @@ class Filter {
         res += "\"${cpc![0]}\"";
       } else {
         for (String val in cpc!) {
-          res += "\"val\",";
+          res += "\"$val\",";
         }
         res = res.substring(0, res.length - 1);
       }
@@ -312,7 +354,7 @@ class Filter {
         res += "\"${cpcGroup![0]}\"";
       } else {
         for (String val in cpcGroup!) {
-          res += "\"val\",";
+          res += "\"$val\",";
         }
         res = res.substring(0, res.length - 1);
       }
@@ -324,7 +366,7 @@ class Filter {
         res += "\"${cpcSubclass![0]}\"";
       } else {
         for (String val in cpcSubclass!) {
-          res += "\"val\",";
+          res += "\"$val\",";
         }
         res = res.substring(0, res.length - 1);
       }
@@ -336,7 +378,7 @@ class Filter {
         res += "\"${ids![0]}\"";
       } else {
         for (String val in ids!) {
-          res += "\"val\",";
+          res += "\"$val\",";
         }
         res = res.substring(0, res.length - 1);
       }
