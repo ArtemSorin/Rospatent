@@ -1,33 +1,34 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-Preferences prefs = Preferences();
-
 class Preferences {
-  SharedPreferences? prefs;
+  static Preferences prefs = Preferences();
 
   List<String> _favoriteIds = [];
 
-  void addFavorite(String id) {
+  void addFavorite(String id) async {
     _favoriteIds.add(id);
-    prefs!.setStringList("favorites", _favoriteIds);
+    (await SharedPreferences.getInstance())
+        .setStringList("favorites", _favoriteIds);
   }
 
-  void removeFavorite(String id) {
+  void removeFavorite(String id) async {
     _favoriteIds.remove(id);
-    prefs!.setStringList("favorites", _favoriteIds);
+    (await SharedPreferences.getInstance())
+        .setStringList("favorites", _favoriteIds);
   }
 
-  List<String> getFavorites() {
-    _favoriteIds = prefs!.getStringList("favorites") ?? [];
+  Future<List<String>> getFavorites() async {
+    _favoriteIds =
+        (await SharedPreferences.getInstance()).getStringList("favorites") ??
+            [];
     return _favoriteIds;
   }
 
-  Preferences() {
-    _createPrefs();
-    getFavorites();
+  Future<bool> isFavorites(String id) async {
+    return (await getFavorites()).contains(id);
   }
 
-  void _createPrefs() async {
-    prefs = await SharedPreferences.getInstance();
+  Preferences() {
+    getFavorites();
   }
 }

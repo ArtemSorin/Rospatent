@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'list_page.dart';
 import 'package:flutter_application1/patent_api.dart';
+import 'models/prefs.dart';
 import 'models/search_page_model.dart' as model;
 
 class PatentScreen extends StatefulWidget {
@@ -27,6 +28,21 @@ class PatentScreenState extends State<PatentScreen> {
         body: ListView(
           //crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            ElevatedButton(
+                onPressed: () async => {
+                      if (!(await Preferences.prefs.isFavorites(
+                          model.SearchPageModel.selectedPatent!.id)))
+                        {
+                          Preferences.prefs.addFavorite(
+                              model.SearchPageModel.selectedPatent!.id)
+                        }
+                      else
+                        {
+                          Preferences.prefs.removeFavorite(
+                              model.SearchPageModel.selectedPatent!.id)
+                        }
+                    },
+                child: const Icon(Icons.star)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: Column(

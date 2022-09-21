@@ -94,35 +94,14 @@ class _ScreenA extends State<ScreenA> {
                 ),
               ],
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 1),
-              child: Text(
-                'Тип',
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
+              child: TextFormField(
+                decoration: const InputDecoration(
+                  border: UnderlineInputBorder(),
+                  labelText: 'Дата публикации до',
+                ),
               ),
-            ),
-            Row(
-              children: [
-                Checkbox(
-                  checkColor: Colors.white,
-                  value: isCheckedFirst,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      isCheckedFirst = value!;
-                    });
-                  },
-                ),
-                const Text("Заявка"),
-                Checkbox(
-                  checkColor: Colors.white,
-                  value: isCheckedSecond,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      isCheckedSecond = value!;
-                    });
-                  },
-                ),
-                const Text("Патент"),
-              ],
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
