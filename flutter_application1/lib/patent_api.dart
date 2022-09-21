@@ -22,6 +22,7 @@ class PatentAPI {
 
       List<Patent>? patents = <Patent>[];
       SearchResult searchResult = SearchResult();
+      searchResult.params = params;
 
       for (var solution in data["hits"]) {
         Map snippet = solution["snippet"] as Map;
@@ -39,12 +40,18 @@ class PatentAPI {
       }
 
       searchResult.total = data["total"];
-      searchResult.available = data["available"];
+      searchResult.count = data["available"];
       searchResult.patents = patents;
       return searchResult;
     } else {
       return null;
     }
+  }
+
+  Future<SearchResult?> switchPage(SearchResult searched, int page) async {
+    int offset = page * (searched.params.limit ?? 10);
+    searched.params.offset = offset;
+    return await find(searched.params);
   }
 
   Future<Patent?> getPatent(String id) async {
@@ -276,14 +283,14 @@ class FindParams {
   GroupingTypes? groupBy;
   bool includeFacets = false;
   Filter? filter;
-  List<Dataset> datasets = [];
+  List<Dataset> datasets = [Dataset.available[2]];
 
   String getJson() {
     Map<String, Object> data = <String, Object>{};
     if (formal != null) data["q"] = formal as String;
     if (informal != null) data["qn"] = informal as String;
-    if (limit != null) data["limit"] = limit.toString();
-    if (offset != null) data["offset"] = offset.toString();
+    if (limit != null) data["limit"] = limit as Object;
+    if (offset != null) data["offset"] = offset as Object;
 
     if (sort != null) {
       String? sortStr;
@@ -321,6 +328,11 @@ class FindParams {
     }
 
     if (filter != null) data["filter"] = json.decode(filter!.getJson());
+
+    data["datasets"] = [];
+    for (var val in datasets) {
+      (data["datasets"] as List<String>).add(val.id);
+    }
 
     return jsonEncode(data);
   }
@@ -564,12 +576,21 @@ class Dataset {
   String id = "";
   String name = "";
 
+  static List<Dataset> available = [
+    Dataset("ru_till_1994", "Россия до 1994 года", "Россия и страны СНГ"),
+    Dataset("ru_since_1994", "Россия с 1994 года", "Россия и страны СНГ"),
+    Dataset("cis", "Патентные документы СНГ", "Россия и страны СНГ"),
+  ];
+
   Dataset(this.id, this.name, this.category);
 }
 
 class SearchResult {
   int total = 0;
-  int available = 0;
+  int count = 0;
+
+  FindParams params = FindParams();
+
   List<Patent>? patents;
 }
 
