@@ -43,6 +43,7 @@ class PatentAPI {
       searchResult.count = patents.length;
       searchResult.pagesCount = data["total"] ~/ params.limit;
       searchResult.patents = patents;
+      searchResult.currenPage = (params.offset ?? 0) ~/ params.limit;
       return searchResult;
     } else {
       return null;
@@ -593,6 +594,7 @@ class SearchResult {
   int total = 0;
   int count = 0;
   int pagesCount = 0;
+  int currenPage = 0;
 
   FindParams params = FindParams();
 

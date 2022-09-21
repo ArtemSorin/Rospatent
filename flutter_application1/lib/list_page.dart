@@ -14,11 +14,34 @@ class SecondHome extends StatefulWidget {
 class SecondHomeState extends State<SecondHome> {
   //final List<String> _users = ["Tom", "Alice", "Sam", "Bob", "Kate"];
   List<Patent> patents = [];
-
+  int _selectedScreenIndex = 0;
+  List<BottomNavigationBarItem> pageButtons = [
+    BottomNavigationBarItem(icon: const Text(''), label: '0'),
+    BottomNavigationBarItem(icon: const Text(''), label: '1'),
+    BottomNavigationBarItem(icon: const Text(''), label: '2'),
+  ];
   void addItemsToPatents(SearchResult res) {
     setState(() {
-      patents.addAll((SearchPageModel.patents ?? SearchResult()).patents);
+      patents.addAll(res.patents);
+      pageButtons.clear();
+      pageButtons.add(BottomNavigationBarItem(
+          icon: const Text(''), label: (res.currenPage - 1).toString()));
+
+      pageButtons.add(BottomNavigationBarItem(
+          icon: const Text(''), label: (res.currenPage).toString()));
+
+      pageButtons.add(BottomNavigationBarItem(
+          icon: const Text(''), label: (res.currenPage + 1).toString()));
     });
+  }
+
+  void _selectScreen(int index) async {
+    _selectedScreenIndex = index;
+    patents.clear();
+    int i = int.parse(pageButtons[index].label ?? '0');
+    addItemsToPatents(
+        (await api.switchPage(SearchPageModel.patents!, i)) ?? SearchResult());
+    setState(() {});
   }
 
   @override
@@ -34,6 +57,11 @@ class SecondHomeState extends State<SecondHome> {
             Navigator.pop(context);
           },
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedScreenIndex,
+        onTap: _selectScreen,
+        items: pageButtons,
       ),
       body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Expanded(
