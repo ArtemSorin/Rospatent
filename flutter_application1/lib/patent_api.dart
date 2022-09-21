@@ -40,7 +40,8 @@ class PatentAPI {
       }
 
       searchResult.total = data["total"];
-      searchResult.count = data["available"];
+      searchResult.count = patents.length;
+      searchResult.pagesCount = data["total"] / params.limit;
       searchResult.patents = patents;
       return searchResult;
     } else {
@@ -588,6 +589,7 @@ class Dataset {
 class SearchResult {
   int total = 0;
   int count = 0;
+  int pagesCount = 0;
 
   FindParams params = FindParams();
 
