@@ -330,7 +330,7 @@ class FindParams {
 
     if (filter != null) data["filter"] = json.decode(filter!.getJson());
 
-    data["datasets"] = [];
+    data["datasets"] = <String>[];
     for (var val in datasets) {
       (data["datasets"] as List<String>).add(val.id);
     }
