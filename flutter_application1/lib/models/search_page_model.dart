@@ -1,9 +1,16 @@
 import 'package:flutter_application1/list_page.dart';
+import 'package:flutter_application1/patent_page.dart';
 
 import '../patent_api.dart' as api;
 
 class SearchPageModel {
   static api.SearchResult? patents;
+  static api.Patent? selectedPatent;
+
+  static void onPatentClicked(api.Patent patent) async {
+    selectedPatent = await api.api.getPatent(patent);
+    PatentScreen.state!.update();
+  }
 
   static void onSearchClicked(String text,
       {String? patentee, String? authors, int? sortingTypes}) async {

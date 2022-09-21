@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application1/models/search_page_model.dart';
 import 'package:flutter_application1/patent_api.dart';
+import 'package:flutter_application1/patent_page.dart';
 import 'package:tag_highlight_text/tag_highlight_text.dart';
 
 class SecondHome extends StatefulWidget {
@@ -41,42 +42,53 @@ class SecondHomeState extends State<SecondHome> {
               itemBuilder: (BuildContext context, int index) {
                 return Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Column(
-                      children: [
-                        TagHighlightText(
-                          text: patents[index].snippet!.title,
-                          highlightBuilder: (tagName) {
-                            switch (tagName) {
-                              case 'em':
-                                return HighlightData(
-                                    style: const TextStyle(
-                                        backgroundColor: Colors.yellowAccent));
-                            }
-                            return null;
-                          },
-                          textStyle: const TextStyle(
-                            color: Colors.black,
-                          ),
+                      padding: const EdgeInsets.all(10.0),
+                      child: InkWell(
+                        onTap: () {
+                          SearchPageModel.onPatentClicked(patents[index]);
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const PatentScreen()),
+                          );
+                        },
+                        child: Column(
+                          children: [
+                            TagHighlightText(
+                              text: patents[index].snippet!.title,
+                              highlightBuilder: (tagName) {
+                                switch (tagName) {
+                                  case 'em':
+                                    return HighlightData(
+                                        style: const TextStyle(
+                                            backgroundColor:
+                                                Colors.yellowAccent));
+                                }
+                                return null;
+                              },
+                              textStyle: const TextStyle(
+                                color: Colors.black,
+                              ),
+                            ),
+                            TagHighlightText(
+                                text: patents[index].snippet!.desc,
+                                highlightBuilder: (tagName) {
+                                  switch (tagName) {
+                                    case 'em':
+                                      return HighlightData(
+                                          style: const TextStyle(
+                                              backgroundColor:
+                                                  Colors.yellowAccent));
+                                  }
+                                  return null;
+                                },
+                                textStyle: const TextStyle(
+                                  color: Colors.black,
+                                )),
+                          ],
                         ),
-                        TagHighlightText(
-                            text: patents[index].snippet!.desc,
-                            highlightBuilder: (tagName) {
-                              switch (tagName) {
-                                case 'em':
-                                  return HighlightData(
-                                      style: const TextStyle(
-                                          backgroundColor:
-                                              Colors.yellowAccent));
-                              }
-                              return null;
-                            },
-                            textStyle: const TextStyle(
-                              color: Colors.black,
-                            )),
-                      ],
-                    ),
-                  ),
+                      )),
                 );
               }),
         )

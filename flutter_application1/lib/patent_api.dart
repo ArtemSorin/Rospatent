@@ -55,13 +55,15 @@ class PatentAPI {
     return await find(searched.params);
   }
 
-  Future<Patent?> getPatent(String id) async {
-    String address = "${url}docs/$id";
+  Future<Patent?> getPatent(Patent p) async {
+    String address = "${url}docs/${p.id}";
     http.Response res = await http.get(Uri.parse(address), headers: headers);
     if (res.statusCode == 200) {
       Map data = json.decode(utf8.decode(res.bodyBytes));
 
       Patent patent = Patent.empty();
+
+      patent.snippet = p.snippet;
       patent.id = data["id"];
       patent.dataset = data["dataset"];
       patent.index = data["index"];
@@ -70,10 +72,10 @@ class PatentAPI {
       patent.kind = data["common"]["kind"];
       patent.guid = data["common"]["guid"];
       for (var language in (data["biblio"] as Map).keys) {
-        patent.title[language] = data["biblio"][language]["title"];
-        patent.desc[language] = data["description"][language];
-        patent.abstract[language] = data["abstract"][language];
-        patent.claims[language] = data["claims"][language];
+        patent.title[language] = data["biblio"][language]["title"] ?? "";
+        patent.desc[language] = data["description"][language] ?? "";
+        patent.abstract[language] = data["abstract"][language] ?? "";
+        patent.claims[language] = data["claims"][language] ?? "";
 
         for (var inv in (data["biblio"][language]["inventor"] as List)) {
           if (patent.inventor[language] == null) patent.inventor[language] = [];
@@ -273,6 +275,7 @@ class PatentSnippet {
 
   PatentSnippet(this.title, this.desc, this.lang, this.applicant, this.inventor,
       this.patentee, this.ipc, this.cpc);
+  PatentSnippet.empty();
 }
 
 class FindParams {
