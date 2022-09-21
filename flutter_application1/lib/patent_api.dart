@@ -41,7 +41,7 @@ class PatentAPI {
 
       searchResult.total = data["total"];
       searchResult.count = patents.length;
-      searchResult.pagesCount = data["total"] / params.limit;
+      searchResult.pagesCount = data["total"] ~/ params.limit;
       searchResult.patents = patents;
       return searchResult;
     } else {
@@ -50,7 +50,7 @@ class PatentAPI {
   }
 
   Future<SearchResult?> switchPage(SearchResult searched, int page) async {
-    int offset = page * (searched.params.limit ?? 10);
+    int offset = page * (searched.params.limit);
     searched.params.offset = offset;
     return await find(searched.params);
   }
@@ -278,7 +278,7 @@ class PatentSnippet {
 class FindParams {
   String? formal;
   String? informal;
-  int? limit;
+  int limit = 10;
   int? offset;
   SortingTypes? sort = SortingTypes.relevance;
   GroupingTypes? groupBy;
@@ -330,7 +330,7 @@ class FindParams {
 
     if (filter != null) data["filter"] = json.decode(filter!.getJson());
 
-    data["datasets"] = [];
+    data["datasets"] = <String>[];
     for (var val in datasets) {
       (data["datasets"] as List<String>).add(val.id);
     }
