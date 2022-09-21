@@ -4,6 +4,8 @@ import 'package:flutter_application1/patent_api.dart';
 import 'package:flutter_application1/patent_page.dart';
 import 'package:tag_highlight_text/tag_highlight_text.dart';
 
+import 'screen_analyze.dart';
+
 class SecondHome extends StatefulWidget {
   const SecondHome({Key? key}) : super(key: key);
   static SecondHomeState? state;
@@ -27,6 +29,16 @@ class SecondHomeState extends State<SecondHome> {
         home: Scaffold(
       appBar: AppBar(
         title: const Text("Найденные патенты"),
+        actions: <Widget>[
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AnalyzePage()),
+                );
+              },
+              icon: const Icon(Icons.analytics)),
+        ],
         leading: IconButton(
           icon: const Icon(Icons.navigate_before),
           tooltip: 'Go to the previous page',

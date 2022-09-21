@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'patent_api.dart' as api;
-import 'package:flutter/material.dart';
 import './screen_search.dart';
 import './screen_like.dart';
 import './screen_list_page.dart';

@@ -24,18 +24,24 @@ class _ScreenA extends State<ScreenA> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-              child: TextField(
-                controller: searchTextController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Поиск по тексту',
+            Container(
+              color: Colors.white,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                child: TextField(
+                  controller: searchTextController,
+                  decoration: const InputDecoration(
+                    fillColor: Colors.white,
+                    prefixIconColor: Colors.white,
+                    border: OutlineInputBorder(),
+                    hintText: 'Поиск по тексту',
+                  ),
                 ),
               ),
             ),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 1),
               child: Text(
                 'Сортировать по',
               ),
@@ -44,7 +50,7 @@ class _ScreenA extends State<ScreenA> {
               children: [
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
                   child: DropdownButton<int>(
                     value: sortValue,
                     items: const [
@@ -89,7 +95,7 @@ class _ScreenA extends State<ScreenA> {
               ],
             ),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 5),
+              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 1),
               child: Text(
                 'Тип',
               ),
@@ -119,7 +125,7 @@ class _ScreenA extends State<ScreenA> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
               child: TextFormField(
                 decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
@@ -128,7 +134,7 @@ class _ScreenA extends State<ScreenA> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
               child: TextFormField(
                 controller: authorsTextController,
                 decoration: const InputDecoration(
