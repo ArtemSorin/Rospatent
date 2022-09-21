@@ -1,3 +1,5 @@
+import 'package:flutter_application1/list_page.dart';
+
 import '../patent_api.dart' as api;
 
 class SearchPageModel {
@@ -37,5 +39,6 @@ class SearchPageModel {
     }
 
     patents = await api.api.find(params);
+    SecondHome.state!.addItemsToPatents(patents ?? api.SearchResult());
   }
 }

@@ -593,7 +593,7 @@ class SearchResult {
 
   FindParams params = FindParams();
 
-  List<Patent>? patents;
+  List<Patent> patents = [];
 }
 
 enum SortingTypes { relevance, publicationA, publicationZ, filingA, filingZ }
