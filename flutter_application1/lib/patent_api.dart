@@ -505,10 +505,10 @@ class Filter {
     if (datePublished.isNotEmpty) {
       String ranges = "";
       for (var date in datePublished) {
-        ranges += '${date!.getJson()}, ';
+        ranges += '${date!.getJson()},';
       }
-      ranges.substring(0, ranges.length - 1);
-      res += "\"date_published\": {\"range\":$ranges},";
+      ranges = ranges.substring(0, ranges.length - 1);
+      res += "\"date_published\": {\"range\":{$ranges}},";
     }
     if (filingDate != null) {
       res += "\"date_published\": {\"range\":${filingDate!.getJson()}},";
@@ -560,7 +560,7 @@ class DateBounce {
   }
 
   String getJson() {
-    String res = "{";
+    String res = "";
     switch (_position) {
       case DateBounceTypes.greater:
         res += "\"gt\": \"";
@@ -577,7 +577,7 @@ class DateBounce {
     }
 
     res +=
-        "${_date.year}${_date.month < 10 ? "0${_date.month}" : _date.month}${_date.day < 10 ? "0${_date.day}" : _date.day}\"}";
+        "${_date.year}${_date.month < 10 ? "0${_date.month}" : _date.month}${_date.day < 10 ? "0${_date.day}" : _date.day}\"";
     return res;
   }
 }

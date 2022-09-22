@@ -46,9 +46,11 @@ class SearchPageModel {
     }
     if ((dateLess ?? DateTime(0)).year != 0) {
       filter.datePublished.add(api.DateBounce(dateLess!, "<="));
+      isFilterNeeded = true;
     }
     if ((dateGreater ?? DateTime(0)).year != 0) {
       filter.datePublished.add(api.DateBounce(dateGreater!, ">="));
+      isFilterNeeded = true;
     }
 
     if (isFilterNeeded) {

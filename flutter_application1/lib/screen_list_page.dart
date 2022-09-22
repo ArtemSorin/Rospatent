@@ -17,7 +17,7 @@ class _ScreenA extends State<ScreenA> {
   TextEditingController patenteeTextController = TextEditingController();
   TextEditingController authorsTextController = TextEditingController();
 
-  DateTime selectedDateLess = DateTime(0);
+  DateTime selectedDateLess = DateTime.now();
 
   _selectDateLess(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -33,7 +33,7 @@ class _ScreenA extends State<ScreenA> {
     }
   }
 
-  DateTime selectedDateGreater = DateTime(0);
+  DateTime selectedDateGreater = DateTime.now();
 
   _selectDateGreater(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -188,12 +188,26 @@ class _ScreenA extends State<ScreenA> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
+                  var today = DateTime.now();
+                  if (selectedDateGreater.day == today.day &&
+                      selectedDateGreater.month == today.month &&
+                      selectedDateGreater.year == today.year) {
+                    selectedDateGreater = DateTime(0);
+                  }
+
+                  if (selectedDateLess.day == today.day &&
+                      selectedDateLess.month == today.month &&
+                      selectedDateLess.year == today.year) {
+                    selectedDateLess = DateTime(0);
+                  }
+
                   model.SearchPageModel.onSearchClicked(
-                    searchTextController.text,
-                    sortingTypes: sortValue - 1,
-                    patentee: patenteeTextController.text,
-                    authors: authorsTextController.text,
-                  );
+                      searchTextController.text,
+                      sortingTypes: sortValue - 1,
+                      patentee: patenteeTextController.text,
+                      authors: authorsTextController.text,
+                      dateLess: selectedDateLess,
+                      dateGreater: selectedDateGreater);
 
                   //Route route =
                   //MaterialPageRoute(builder: (context) => SecondHome());
