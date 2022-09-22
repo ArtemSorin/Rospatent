@@ -373,22 +373,22 @@ class Filter {
     if (authors != null) {
       res += "\"authors\": {\"values\":[";
       if (authors!.length == 1) {
-        res += "\"${authors![0]}\"";
+        res += "\"${authors![0]} (RU)\"";
       } else {
         for (String author in authors!) {
-          res += "\"$author\",";
+          res += "\"$author (RU)\",";
         }
         res = res.substring(0, res.length - 1);
       }
       res += "]},";
     }
     if (patentHolders != null) {
-      res += "\"authors\": {\"values\":[";
+      res += "\"patent_holders\": {\"values\":[";
       if (patentHolders!.length == 1) {
-        res += "\"${patentHolders![0]}\"";
+        res += "\"${patentHolders![0]} (RU)\"";
       } else {
         for (String patentHolder in patentHolders!) {
-          res += "\"$patentHolder\",";
+          res += "\"$patentHolder (RU)\",";
         }
         res = res.substring(0, res.length - 1);
       }
