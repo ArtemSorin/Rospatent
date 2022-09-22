@@ -45,7 +45,7 @@ class SecondHomeState extends State<SecondHome> {
   }
 
   void _selectScreen(int index) async {
-    _selectedScreenIndex = index;
+    _selectedScreenIndex = int.parse(pageButtons[index].label ?? '0');
     patents.clear();
     int i = int.parse(pageButtons[index].label ?? '0');
     addItemsToPatents(
