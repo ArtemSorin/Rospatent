@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application1/models/search_page_model.dart';
+import 'package:flutter_application1/patent_api.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class AnalyzePage extends StatefulWidget {
@@ -9,14 +11,20 @@ class AnalyzePage extends StatefulWidget {
 }
 
 class _AnalyzePageState extends State<AnalyzePage> {
-  late List<GDPData> _chartData;
+  List<GDPData> _chartData = [];
   late TooltipBehavior _tooltipBehavior;
 
   @override
   void initState() {
-    _chartData = getChartData();
     _tooltipBehavior = TooltipBehavior(enable: true);
     super.initState();
+
+    setState(() {
+      getChartData().then((value) {
+        _chartData = value;
+        setState(() {});
+      });
+    });
   }
 
   @override
@@ -24,8 +32,7 @@ class _AnalyzePageState extends State<AnalyzePage> {
     return SafeArea(
         child: Scaffold(
             body: SfCircularChart(
-      title:
-          ChartTitle(text: 'Continent wise GDP - 2021 \n (in billions of USD)'),
+      title: ChartTitle(text: 'Доля по странам'),
       legend:
           Legend(isVisible: true, overflowMode: LegendItemOverflowMode.wrap),
       tooltipBehavior: _tooltipBehavior,
@@ -34,28 +41,52 @@ class _AnalyzePageState extends State<AnalyzePage> {
             dataSource: _chartData,
             xValueMapper: (GDPData data, _) => data.continent,
             yValueMapper: (GDPData data, _) => data.gdp,
-            dataLabelSettings: DataLabelSettings(isVisible: true),
+            dataLabelSettings: const DataLabelSettings(isVisible: true),
             enableTooltip: true,
-            maximumValue: 40000)
+            maximumValue: 10000)
       ],
     )));
   }
 
-  List<GDPData> getChartData() {
-    final List<GDPData> chartData = [
-      GDPData('Oceania', 1600),
-      GDPData('Africa', 2490),
-      GDPData('S America', 2900),
-      GDPData('Europe', 23050),
-      GDPData('N America', 24880),
-      GDPData('Asia', 34390),
-    ];
+  Future<List<GDPData>> getChartData() async {
+    var p = SearchPageModel.patents!.params;
+
+    int count = 20;
+    List<Patent> pts = [];
+    List<GDPData> chartData = [];
+
+    for (int i = 0; i < count; i += p.limit) {
+      pts = ((await api.find(p))!.patents);
+
+      Map<String, int> data = {};
+      for (Patent pt in pts) {
+        pt = await api.getPatent(pt) ?? pt;
+        if (data[pt.country] == null) {
+          data[pt.country] = 1;
+        } else {
+          data[pt.country] = (data[pt.country])! + 1;
+        }
+      }
+      for (var key in data.keys) {
+        GDPData possible = chartData.firstWhere(
+            (element) => element.continent == key,
+            orElse: () => GDPData.empty());
+        if (possible.continent != null) {
+          chartData.remove(possible);
+          possible.gdp += data[key] ?? 0;
+          chartData.add(possible);
+        } else {
+          chartData.add(GDPData(key, data[key] ?? 0));
+        }
+      }
+    }
     return chartData;
   }
 }
 
 class GDPData {
   GDPData(this.continent, this.gdp);
-  final String continent;
-  final int gdp;
+  GDPData.empty();
+  String? continent;
+  int gdp = 0;
 }

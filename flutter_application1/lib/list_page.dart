@@ -14,26 +14,33 @@ class SecondHome extends StatefulWidget {
 }
 
 class SecondHomeState extends State<SecondHome> {
-  //final List<String> _users = ["Tom", "Alice", "Sam", "Bob", "Kate"];
   List<Patent> patents = [];
-  int _selectedScreenIndex = 0;
+  int _selectedScreenIndex = 1;
   List<BottomNavigationBarItem> pageButtons = [
-    BottomNavigationBarItem(icon: const Text(''), label: '0'),
-    BottomNavigationBarItem(icon: const Text(''), label: '1'),
-    BottomNavigationBarItem(icon: const Text(''), label: '2'),
+    const BottomNavigationBarItem(icon: Text(''), label: '0'),
+    const BottomNavigationBarItem(icon: Text(''), label: '1'),
+    const BottomNavigationBarItem(icon: Text(''), label: '2'),
   ];
   void addItemsToPatents(SearchResult res) {
     setState(() {
       patents.addAll(res.patents);
-      pageButtons.clear();
-      pageButtons.add(BottomNavigationBarItem(
-          icon: const Text(''), label: (res.currenPage - 1).toString()));
 
-      pageButtons.add(BottomNavigationBarItem(
-          icon: const Text(''), label: (res.currenPage).toString()));
-
-      pageButtons.add(BottomNavigationBarItem(
-          icon: const Text(''), label: (res.currenPage + 1).toString()));
+      if (res.currenPage > 0) {
+        pageButtons[0] = BottomNavigationBarItem(
+            icon: const Text(''), label: (res.currenPage - 1).toString());
+      } else {
+        pageButtons[0] = BottomNavigationBarItem(
+            icon: const Text(''), label: (res.pagesCount - 1).toString());
+      }
+      pageButtons[1] = BottomNavigationBarItem(
+          icon: const Text(''), label: (res.currenPage).toString());
+      if (res.currenPage < res.pagesCount - 1) {
+        pageButtons[2] = BottomNavigationBarItem(
+            icon: const Text(''), label: (res.currenPage + 1).toString());
+      } else {
+        pageButtons[2] =
+            const BottomNavigationBarItem(icon: Text(''), label: '0');
+      }
     });
   }
 

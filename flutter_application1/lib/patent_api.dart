@@ -78,21 +78,28 @@ class PatentAPI {
         patent.abstract[language] = data["abstract"][language] ?? "";
         patent.claims[language] = data["claims"][language] ?? "";
 
-        for (var inv in (data["biblio"][language]["inventor"] as List)) {
+        for (var inv
+            in ((data["biblio"][language]["inventor"] ?? []) as List)) {
           if (patent.inventor[language] == null) patent.inventor[language] = [];
           patent.inventor[language]!.add(inv["name"]);
         }
-        for (var pat in (data["biblio"][language]["patentee"] as List)) {
+        for (var pat
+            in ((data["biblio"][language]["patentee"] ?? []) as List)) {
           if (patent.patentee[language] == null) patent.patentee[language] = [];
           patent.patentee[language]!.add(pat["name"]);
         }
       }
 
-      patent.publicationDate = DateTime.parse(
-          (data["common"]["publication_date"] as String).replaceAll('.', '-'));
-      patent.filingDate = DateTime.parse(
-          (data["common"]["application"]["filing_date"] as String)
-              .replaceAll('.', '-'));
+      patent.country = data["common"]["publishing_office"] ?? "";
+
+      patent.publicationDate = DateTime.tryParse(
+              ((data["common"]["publication_date"] ?? "") as String)
+                  .replaceAll('.', '-')) ??
+          DateTime(0);
+      patent.filingDate = DateTime.tryParse(
+              ((data["common"]["application"]["filing_date"] ?? "") as String)
+                  .replaceAll('.', '-')) ??
+          DateTime(0);
 
       for (var drt in data["drawings"] ?? []) {
         patent.drawings.add(Drawing(
@@ -197,6 +204,8 @@ class Patent {
   DateTime? publicationDate;
   DateTime? filingDate;
 
+  String country = "";
+
   String index = "";
   String dataset = "";
 
@@ -294,7 +303,7 @@ class FindParams {
     Map<String, Object> data = <String, Object>{};
     if (formal != null) data["q"] = formal as String;
     if (informal != null) data["qn"] = informal as String;
-    if (limit != null) data["limit"] = limit as Object;
+    data["limit"] = limit;
     if (offset != null) data["offset"] = offset as Object;
 
     if (sort != null) {
@@ -334,10 +343,10 @@ class FindParams {
 
     if (filter != null) data["filter"] = json.decode(filter!.getJson());
 
-    data["datasets"] = <String>[];
-    for (var val in datasets) {
-      (data["datasets"] as List<String>).add(val.id);
-    }
+    // TODO: data["datasets"] = <String>[];
+    // for (var val in datasets) {
+    //   (data["datasets"] as List<String>).add(val.id);
+    // }
 
     return jsonEncode(data);
   }
