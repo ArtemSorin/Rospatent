@@ -17,10 +17,27 @@ class _ScreenA extends State<ScreenA> {
   TextEditingController patenteeTextController = TextEditingController();
   TextEditingController authorsTextController = TextEditingController();
 
+  DateTime selectedDate = DateTime.now();
+
+  _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2025),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        appBar: AppBar(title: const Text('Поиск')),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -90,6 +107,18 @@ class _ScreenA extends State<ScreenA> {
                         sortValue = value!;
                       });
                     },
+                  ),
+                ),
+                const SizedBox(
+                  height: 20.0,
+                ),
+                RaisedButton(
+                  color: Colors.blue,
+                  onPressed: () => _selectDate(context),
+                  child: Text(
+                    "${selectedDate.toLocal()}".split(' ')[0],
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
