@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'list_page.dart';
 import 'package:flutter_application1/patent_api.dart';
@@ -125,24 +126,45 @@ class PatentScreenState extends State<PatentScreen> {
                 'Номер: ${(model.SearchPageModel.selectedPatent ?? Patent.empty()).number}',
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: Text(
-                'Реферат: ${(model.SearchPageModel.selectedPatent ?? Patent.empty()).abstract["ru"] ?? ""}',
+                'Реферат: ',
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              child: HtmlWidget(
+                  (model.SearchPageModel.selectedPatent ?? Patent.empty())
+                          .abstract["ru"] ??
+                      ""),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: Text(
-                'Формула: ${(model.SearchPageModel.selectedPatent ?? Patent.empty()).claims["ru"] ?? ""}',
+                'Формула: ',
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              child: HtmlWidget(
+                  (model.SearchPageModel.selectedPatent ?? Patent.empty())
+                          .claims["ru"] ??
+                      ""),
+            ),
+            const Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: Text(
-                'Описание: ${(model.SearchPageModel.selectedPatent ?? Patent.empty()).desc["ru"] ?? ""}',
+                'Описание: ',
               ),
-            )
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              child: HtmlWidget(
+                  (model.SearchPageModel.selectedPatent ?? Patent.empty())
+                          .desc["ru"] ??
+                      ""),
+            ),
           ],
         ),
       ),
