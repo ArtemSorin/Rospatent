@@ -17,18 +17,34 @@ class _ScreenA extends State<ScreenA> {
   TextEditingController patenteeTextController = TextEditingController();
   TextEditingController authorsTextController = TextEditingController();
 
-  DateTime selectedDate = DateTime.now();
+  DateTime selectedDateLess = DateTime(0);
 
-  _selectDate(BuildContext context) async {
+  _selectDateLess(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2025),
+      initialDate: selectedDateLess,
+      firstDate: DateTime(0),
+      lastDate: DateTime.now(),
     );
-    if (picked != null && picked != selectedDate) {
+    if (picked != null && picked != selectedDateLess) {
       setState(() {
-        selectedDate = picked;
+        selectedDateLess = picked;
+      });
+    }
+  }
+
+  DateTime selectedDateGreater = DateTime(0);
+
+  _selectDateGreater(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDateGreater,
+      firstDate: DateTime(0),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != selectedDateGreater) {
+      setState(() {
+        selectedDateGreater = picked;
       });
     }
   }
@@ -112,11 +128,25 @@ class _ScreenA extends State<ScreenA> {
                 const SizedBox(
                   height: 20.0,
                 ),
-                RaisedButton(
-                  color: Colors.blue,
-                  onPressed: () => _selectDate(context),
+                const Text('Дата публикации до: '),
+                ElevatedButton(
+                  //color: Colors.blue,
+                  onPressed: () => _selectDateLess(context),
                   child: Text(
-                    "${selectedDate.toLocal()}".split(' ')[0],
+                    "${selectedDateLess.toLocal()}".split(' ')[0],
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(
+                  height: 20.0,
+                ),
+                const Text('Дата публикации от: '),
+                ElevatedButton(
+                  //color: Colors.blue,
+                  onPressed: () => _selectDateGreater(context),
+                  child: Text(
+                    "${selectedDateGreater.toLocal()}".split(' ')[0],
                     style: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),

@@ -13,7 +13,11 @@ class SearchPageModel {
   }
 
   static void onSearchClicked(String text,
-      {String? patentee, String? authors, int? sortingTypes}) async {
+      {String? patentee,
+      String? authors,
+      int? sortingTypes,
+      DateTime? dateLess,
+      DateTime? dateGreater}) async {
     api.FindParams params = api.FindParams();
     params.informal = text;
     //params.includeFacets = true;
@@ -39,6 +43,12 @@ class SearchPageModel {
             : filter.authors!.add(val);
       }
       isFilterNeeded = true;
+    }
+    if ((dateLess ?? DateTime(0)).year != 0) {
+      filter.datePublished.add(api.DateBounce(dateLess!, "<="));
+    }
+    if ((dateGreater ?? DateTime(0)).year != 0) {
+      filter.datePublished.add(api.DateBounce(dateGreater!, ">="));
     }
 
     if (isFilterNeeded) {

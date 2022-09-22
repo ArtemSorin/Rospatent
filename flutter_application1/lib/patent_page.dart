@@ -79,7 +79,7 @@ class PatentScreenState extends State<PatentScreen> {
                       physics: const ClampingScrollPhysics(),
                       itemCount: ((model.SearchPageModel.selectedPatent ??
                                       Patent.empty())
-                                  .inventor["ru"] ??
+                                  .patentee["ru"] ??
                               [])
                           .length,
                       itemBuilder: (BuildContext context, int index) {

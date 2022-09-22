@@ -357,7 +357,7 @@ class Filter {
   List<String>? patentHolders;
   List<String>? country;
   List<String>? kind;
-  DateBounce? datePublished;
+  List<DateBounce?> datePublished = [];
   DateBounce? filingDate;
   List<String>? ipc;
   List<String>? ipcGroup;
@@ -502,8 +502,13 @@ class Filter {
       }
       res += "]},";
     }
-    if (datePublished != null) {
-      res += "\"date_published\": {\"range\":${datePublished!.getJson()}},";
+    if (datePublished.isNotEmpty) {
+      String ranges = "";
+      for (var date in datePublished) {
+        ranges += '${date!.getJson()}, ';
+      }
+      ranges.substring(0, ranges.length - 1);
+      res += "\"date_published\": {\"range\":$ranges},";
     }
     if (filingDate != null) {
       res += "\"date_published\": {\"range\":${filingDate!.getJson()}},";
