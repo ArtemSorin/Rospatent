@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application1/models/prefs.dart';
 import './screen_search.dart';
 import './screen_like.dart';
 import './screen_list_page.dart';
@@ -37,6 +38,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _selectScreen(int index) {
     setState(() {
+      if (index == 1) {
+        Preferences.prefs.getFavorites();
+      }
       _selectedScreenIndex = index;
     });
   }

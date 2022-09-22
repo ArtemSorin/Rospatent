@@ -3,25 +3,25 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Preferences {
   static Preferences prefs = Preferences();
 
-  List<String> _favoriteIds = [];
+  List<String> favoriteIds = [];
 
   void addFavorite(String id) async {
-    _favoriteIds.add(id);
+    favoriteIds.add(id);
     (await SharedPreferences.getInstance())
-        .setStringList("favorites", _favoriteIds);
+        .setStringList("favorites", favoriteIds);
   }
 
   void removeFavorite(String id) async {
-    _favoriteIds.remove(id);
+    favoriteIds.remove(id);
     (await SharedPreferences.getInstance())
-        .setStringList("favorites", _favoriteIds);
+        .setStringList("favorites", favoriteIds);
   }
 
   Future<List<String>> getFavorites() async {
-    _favoriteIds =
+    favoriteIds =
         (await SharedPreferences.getInstance()).getStringList("favorites") ??
             [];
-    return _favoriteIds;
+    return favoriteIds;
   }
 
   Future<bool> isFavorites(String id) async {
