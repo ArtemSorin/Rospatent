@@ -1,16 +1,58 @@
-# rospatent
+# 📱 Роспатент: Мобильный поиск патентов
 
-A new Flutter project.
+[![Flutter](https://img.shields.io/badge/Flutter-3.27+-02569B?style=for-the-badge&logo=flutter&logoColor=white&labelColor=1A1A2E)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.10+-0175C2?style=for-the-badge&logo=dart&logoColor=white&labelColor=1A1A2E)](https://dart.dev)
 
-## Getting Started
+> Мобильное приложение для удобного поиска и отслеживания патентов в официальной базе Роспатента.  
+> Быстрый доступ к патентам, умные фильтры и современный интерфейс.
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## 📸 Дизайн и интерфейс
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Приложение разработано с акцентом на минимализм и удобство. Основной экран повторяет логику веб-версии, но адаптирован под мобильные жесты.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<img width="5760" height="4242" alt="Rospatent" src="https://github.com/user-attachments/assets/5543f15d-cd3a-494a-886a-870feaae7a2b" />
+
+---
+
+## ✨ Возможности
+
+- 🔍 **Гибкий поиск**  
+  Поиск по номеру заявки, авторам, патентообладателям и ключевым словам.
+
+- 📅 **Фильтрация по дате публикации**  
+  Быстрая настройка периода: от ранних патентов до последних обновлений.
+
+- 🧩 **Сортировка**  
+  По релевантности, дате публикации или автору.
+
+- 📄 **Детальная карточка патента**  
+  Полное описание изобретения, информация об авторе и правообладателе.
+
+- 📱 **Адаптивный интерфейс**  
+  Комфортная работа на любых устройствах благодаря кастомным компонентам.
+
+---
+
+## ⚙️ Технологии
+
+| Компонент | Технология |
+|-----------|------------|
+| **Фреймворк** | Flutter 3.27+ |
+| **Язык** | Dart 3.10+ |
+| **Сетевое взаимодействие** | `http` |
+| **Хранение данных** | `shared_preferences` |
+| **Графики** | `fl_chart` |
+| **HTML-рендеринг** | `flutter_widget_from_html` |
+| **Форматирование дат** | `intl` |
+| **Подсветка текста** | `tag_highlight_text` |
+| **Линтинг** | `flutter_lints` |
+
+---
+
+## 🚀 Установка и запуск
+
+### Требования
+- Android 9.0+
+- iOS 14+
