@@ -1,30 +1,21 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Дымовой тест всего приложения. Подробные тесты лежат рядом по слоям:
+// test/core, test/app, test/features/*, test/integration.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rospatent/app/app.dart';
+import 'package:rospatent/app/app_scope.dart';
+import 'package:rospatent/features/patents/presentation/screens/home_screen.dart';
 
-import 'package:rospatent/main.dart';
+import 'helpers/fakes.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const App());
+  testWidgets('приложение запускается на экране поиска', (WidgetTester tester) async {
+    await tester.pumpWidget(AppScope(dependencies: buildDeps(), child: const App()));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.byType(HomePage), findsOneWidget);
+    expect(find.text('Роспатент'), findsOneWidget);
+    expect(find.text('Поиск по тексту'), findsOneWidget);
+    expect(find.byIcon(Icons.star_border), findsOneWidget); // вкладка «Избранное»
   });
 }

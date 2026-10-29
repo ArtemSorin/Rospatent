@@ -46,3 +46,5 @@ app.*.map.json
 
 # API key
 lib/auth/secrets.dart
+# Widget Preview related
+.widget_preview/
