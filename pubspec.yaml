@@ -52,6 +52,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.8
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -94,3 +96,57 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+
+flutter_native_splash:
+  # --- ОБЯЗАТЕЛЬНЫЙ ПАРАМЕТР ---
+  # Выберите что-то одно: color или background_image.
+  # `color` задает сплошной цвет фона (HEX-код).
+  color: "#1552da" 
+  # `background_image` задает фоновое изображение (например, для градиента).
+  #background_image: "assets/background.png"
+
+  # --- ОСНОВНОЕ ИЗОБРАЖЕНИЕ (ЛОГОТИП) ---
+  # Должно быть в формате PNG с прозрачностью.
+  # Рекомендуется использовать изображение с запасом для 4x плотности пикселей.
+  image: assets/icon/app_icon.png
+
+  # --- НАСТРОЙКИ ДЛЯ ТЕМНОЙ ТЕМЫ ---
+  # Если не указаны, будут использованы параметры выше.
+  #color_dark: "#042a49"
+  #image_dark: assets/splash-invert.png
+
+  # --- БРЕНДИНГ (ЛОГОТИП ВНИЗУ ЭКРАНА) ---
+  # Необязательное изображение, которое можно разместить внизу.
+  #branding: assets/dart.png
+  # Позиция брендинга: bottom, bottomRight, bottomLeft.
+  #branding_mode: bottom
+
+  # --- ПОЗИЦИОНИРОВАНИЕ ---
+  # Управление положением логотипа на экране.
+  #android_gravity: center
+  #ios_content_mode: scaleAspectFit
+  #fullscreen: true # Скрыть статус-бар для полноэкранного режима
+
+  # --- ОТКЛЮЧЕНИЕ ДЛЯ КОНКРЕТНЫХ ПЛАТФОРМ ---
+  #android: false
+  #ios: false
+  #web: false
+
+  # --- СПЕЦИАЛЬНАЯ СЕКЦИЯ ДЛЯ ANDROID 12+ ---
+  # Android 12 (и выше) использует другой механизм заставок,
+  # поэтому эти параметры нужно настраивать отдельно.
+  android_12:
+    # Изображение, которое будет отображаться в центре.
+    # Если не указано, будет использована иконка приложения.
+    # Должно быть 960x960px (с фоном) или 1152x1152px (без фона).
+    image: assets/icon/app_icon.png
+    # Цвет фона заставки для Android 12+.
+    #color: "#42a5f5"
+    # Цвет фона иконки.
+    #icon_background_color: "#FF4242"
