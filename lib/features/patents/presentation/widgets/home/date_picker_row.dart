@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:rospatent/core/theme/app_colors.dart';
+import 'package:rospatent/core/theme/app_text.dart';
+import 'package:rospatent/core/widgets/app_ui.dart';
 
 class DatePickerRow extends StatelessWidget {
   final DateTime? from;
@@ -21,42 +24,34 @@ class DatePickerRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Дата публикации",
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _DateField(
-                    label: "Публикация от",
-                    date: from,
-                    onTap: onPickFrom,
-                    onClear: onClearFrom,
-                  ),
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Дата публикации', style: AppText.h3),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _DateField(
+                  label: 'Публикация от',
+                  date: from,
+                  onTap: onPickFrom,
+                  onClear: onClearFrom,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _DateField(
-                    label: "Публикация до",
-                    date: to,
-                    onTap: onPickTo,
-                    onClear: onClearTo,
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _DateField(
+                  label: 'Публикация до',
+                  date: to,
+                  onTap: onPickTo,
+                  onClear: onClearTo,
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -78,38 +73,62 @@ class _DateField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = date;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 6),
-        InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: onTap,
-          child: InputDecorator(
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.calendar_today),
-              suffixIcon: selected == null
-                  ? null
-                  : IconButton(
-                      icon: const Icon(Icons.close, size: 18),
-                      tooltip: 'Сбросить',
-                      onPressed: onClear,
+    return Material(
+      color: AppColors.bg,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: AppText.caption, maxLines: 1),
+                    const SizedBox(height: 3),
+                    Text(
+                      selected == null
+                          ? 'Не выбрана'
+                          : DateFormat('dd.MM.yyyy').format(selected),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: selected == null
+                            ? AppColors.inkTertiary
+                            : AppColors.ink,
+                      ),
                     ),
-            ),
-            child: Text(
-              selected == null ? 'Не выбрана' : DateFormat('dd.MM.yyyy').format(selected),
-              style: TextStyle(
-                color: selected == null ? Colors.grey : Colors.black87,
+                  ],
+                ),
               ),
-              overflow: TextOverflow.ellipsis,
-            ),
+              if (selected == null)
+                const Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: Icon(
+                    Icons.calendar_today_outlined,
+                    size: 18,
+                    color: AppColors.inkTertiary,
+                  ),
+                )
+              else
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                  icon: const Icon(Icons.close_rounded, size: 18),
+                  color: AppColors.inkSecondary,
+                  tooltip: 'Сбросить',
+                  onPressed: onClear,
+                ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

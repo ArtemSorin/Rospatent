@@ -7,10 +7,10 @@ import 'package:rospatent/features/patents/domain/usecases/search_patents.dart';
 /// Состояние экрана результатов поиска: текущая страница, загрузка, ошибка.
 class SearchResultsController extends ChangeNotifier {
   SearchResultsController({
-    required SearchPatents searchPatents,
+    required this._searchPatents,
     required this.query,
     this.pageSize = 10,
-  }) : _searchPatents = searchPatents;
+  });
 
   final SearchPatents _searchPatents;
   final SearchQuery query;

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:intl/intl.dart';
 import 'package:rospatent/app/app_scope.dart';
+import 'package:rospatent/core/theme/app_colors.dart';
+import 'package:rospatent/core/theme/app_text.dart';
+import 'package:rospatent/core/widgets/app_ui.dart';
 import 'package:rospatent/core/widgets/custom_app_bar.dart';
+import 'package:rospatent/core/widgets/hero_header.dart';
 import 'package:rospatent/features/patents/domain/entities/document_kind.dart';
 import 'package:rospatent/features/patents/domain/entities/patent_details.dart';
 import 'package:rospatent/features/patents/domain/entities/patent_summary.dart';
@@ -53,23 +58,16 @@ class _PatentDetailsPageState extends State<PatentDetailsPage> {
         final c = _controller;
         return Scaffold(
           appBar: CustomAppBar(
-            title: "Выбранный патент",
-            centerTitle: true,
-            leading: IconButton(
-              color: Colors.blueAccent,
-              icon: const Icon(Icons.arrow_back_ios),
-              tooltip: 'Назад',
-              onPressed: () => Navigator.pop(context),
-            ),
+            title: 'Выбранный патент',
+            leading: const AppBackButton(),
             actions: [
-              IconButton(
+              AppBarButton(
                 tooltip: c.favorite
-                    ? "Убрать из избранного"
-                    : "Добавить в избранное",
-                icon: Icon(
-                  c.favorite ? Icons.star : Icons.star_border,
-                  color: c.favorite ? Colors.amber : Colors.grey,
-                ),
+                    ? 'Убрать из избранного'
+                    : 'Добавить в избранное',
+                icon: c.favorite ? Icons.star_rounded : Icons.star_outline_rounded,
+                color: c.favorite ? AppColors.amber : AppColors.brand,
+                background: c.favorite ? AppColors.amberSoft : AppColors.brandSoft,
                 onPressed: c.details == null ? null : c.toggleFavorite,
               ),
             ],
@@ -84,24 +82,13 @@ class _PatentDetailsPageState extends State<PatentDetailsPage> {
     final details = c.details;
     if (details != null) return _buildContent(details);
     if (c.loading) return const Center(child: CircularProgressIndicator());
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, size: 56, color: Colors.grey.shade400),
-            const SizedBox(height: 12),
-            Text(
-              c.error ?? 'Не удалось загрузить патент',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton(onPressed: c.load, child: const Text('Повторить')),
-          ],
-        ),
-      ),
+    return StateView(
+      icon: Icons.wifi_off_rounded,
+      isError: true,
+      title: 'Не удалось загрузить патент',
+      subtitle: c.error,
+      actionLabel: 'Повторить',
+      onAction: c.load,
     );
   }
 
@@ -113,113 +100,369 @@ class _PatentDetailsPageState extends State<PatentDetailsPage> {
     ].where((e) => e.isNotEmpty).join(' ');
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-          child: Text(
-            d.title.isEmpty ? 'Без названия' : d.title,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
-            ),
-            textAlign: TextAlign.center,
-          ),
+        _heroCard(d, publication),
+        const SectionTitle('Реквизиты', padding: EdgeInsets.fromLTRB(0, 24, 0, 10)),
+        _requisites(d, publication),
+        const SectionTitle('Авторы', padding: EdgeInsets.fromLTRB(0, 24, 0, 10)),
+        _people(d.inventors, Icons.person_outline_rounded, initials: true),
+        const SectionTitle(
+          'Патентообладатели',
+          padding: EdgeInsets.fromLTRB(0, 24, 0, 10),
         ),
-        if (d.kind.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Text(
-              documentKindLabel(d.kind),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13, color: Colors.blueAccent),
-            ),
-          ),
-
-        _section("Авторы"),
-        ..._cards(d.inventors),
-
-        _section("Патентообладатели"),
-        ..._cards(d.patentees),
-
-        if (d.applicant.isNotEmpty) ...[
-          _section("Заявитель"),
-          _infoCard(d.applicant),
-        ],
-
-        _section("Номер заявки"),
-        _infoCard(d.applicationNumber.isEmpty ? '—' : d.applicationNumber),
-
-        _section("Публикация"),
-        _infoCard(publication.isEmpty ? '—' : publication),
-
-        _section("Дата подачи заявки"),
-        _infoCard(d.filingDate == null ? '—' : _dateFormat.format(d.filingDate!)),
-
-        _section("Дата публикации"),
-        _infoCard(
-          d.publicationDate == null ? '—' : _dateFormat.format(d.publicationDate!),
-        ),
-
-        if (d.ipc.isNotEmpty || d.cpc.isNotEmpty) ...[
-          _section("МПК и CPC"),
-          _infoCard([d.ipc, d.cpc].where((e) => e.isNotEmpty).join('\n')),
-        ],
-
-        _section("Идентификатор"),
-        _infoCard(d.id),
-
-        _section("Реферат"),
-        _html(d.abstractHtml),
-
-        _section("Формула"),
-        _html(d.claimsHtml),
-
-        _section("Описание"),
-        _html(d.descriptionHtml),
+        _people(d.patentees, Icons.business_outlined),
+        const SizedBox(height: 24),
+        _textSection('Реферат', d.abstractHtml, initiallyExpanded: true),
+        _textSection('Формула', d.claimsHtml),
+        _textSection('Описание', d.descriptionHtml),
       ],
     );
   }
 
-  Widget _section(String text) {
+  Widget _heroCard(PatentDetails d, String publication) {
+    return HeroHeader(
+      safeTop: false,
+      borderRadius: BorderRadius.circular(24),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (d.kind.isNotEmpty) ...[
+            AppTag.onDark(documentKindLabel(d.kind)),
+            const SizedBox(height: 14),
+          ],
+          Text(
+            d.title.isEmpty ? 'Без названия' : d.title,
+            style: const TextStyle(
+              fontSize: 20,
+              height: 1.25,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          if (publication.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                const Icon(Icons.article_outlined, size: 18, color: Color(0xCCFFFFFF)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(publication, style: AppText.onDarkBody),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Реквизиты сгруппированы по смыслу: документ, даты, участники заявки,
+  /// классификация, идентификатор. Короткие значения идут парами в две колонки,
+  /// длинные — на всю ширину.
+  Widget _requisites(PatentDetails d, String publication) {
+    String orDash(String v) => v.trim().isEmpty ? '—' : v;
+    String date(DateTime? v) => v == null ? '—' : _dateFormat.format(v);
+
+    final ipcCodes = _codes(d.ipc);
+    final cpcCodes = _codes(d.cpc);
+
+    return AppCard(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _pair(
+            _Tile('Номер заявки', orDash(d.applicationNumber), Icons.tag_rounded),
+            _Tile('Публикация', orDash(publication), Icons.article_outlined),
+          ),
+          const SizedBox(height: 8),
+          _pair(
+            _Tile('Дата подачи', date(d.filingDate), Icons.event_available_outlined),
+            _Tile('Дата публикации', date(d.publicationDate), Icons.event_note_outlined),
+          ),
+          if (d.applicant.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _tile(_Tile('Заявитель', d.applicant, Icons.business_outlined)),
+          ],
+          if (ipcCodes.isNotEmpty || cpcCodes.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _classification(ipcCodes, cpcCodes),
+          ],
+          const SizedBox(height: 8),
+          _identifier(d.id),
+        ],
+      ),
+    );
+  }
+
+  /// Две плитки одной высоты в ряд.
+  Widget _pair(_Tile left, _Tile right) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: _tile(left)),
+          const SizedBox(width: 8),
+          Expanded(child: _tile(right)),
+        ],
+      ),
+    );
+  }
+
+  Widget _tile(_Tile t) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bg,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(t.icon, size: 16, color: AppColors.brand),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  t.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.caption,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          SelectableText(
+            t.value,
+            style: const TextStyle(
+              fontSize: 15,
+              height: 1.3,
+              fontWeight: FontWeight.w600,
+              color: AppColors.ink,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// МПК и CPC — коды чипами, а не строкой текста.
+  Widget _classification(List<String> ipc, List<String> cpc) {
+    Widget group(String label, List<String> codes) {
+      if (codes.isEmpty) return const SizedBox.shrink();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: AppText.caption),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [for (final c in codes) AppTag(c)],
+          ),
+        ],
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bg,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.category_outlined, size: 16, color: AppColors.brand),
+              SizedBox(width: 6),
+              Text('Классификация', style: AppText.caption),
+            ],
+          ),
+          const SizedBox(height: 10),
+          group('МПК', ipc),
+          if (ipc.isNotEmpty && cpc.isNotEmpty) const SizedBox(height: 10),
+          group('CPC', cpc),
+        ],
+      ),
+    );
+  }
+
+  /// Идентификатор с кнопкой «скопировать».
+  Widget _identifier(String id) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+      decoration: BoxDecoration(
+        color: AppColors.bg,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.fingerprint_rounded, size: 16, color: AppColors.brand),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Идентификатор', style: AppText.caption),
+                  const SizedBox(height: 2),
+                  Text(
+                    id,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      height: 1.3,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          IconButton(
+            tooltip: 'Скопировать',
+            icon: const Icon(Icons.copy_rounded, size: 20),
+            color: AppColors.brand,
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: id));
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(const SnackBar(content: Text('Идентификатор скопирован')));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<String> _codes(String raw) => raw
+      .split(RegExp(r'[\n;,]'))
+      .map((e) => e.trim())
+      .where((e) => e.isNotEmpty)
+      .toList();
+
+  Widget _people(List<String> values, IconData icon, {bool initials = false}) {
+    if (values.isEmpty) return _emptyCard();
+    return AppCard(
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          for (var i = 0; i < values.length; i++) ...[
+            if (i > 0) const Divider(height: 1, indent: 68),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: AppColors.brandSoft,
+                      shape: BoxShape.circle,
+                    ),
+                    child: initials && values[i].trim().isNotEmpty
+                        ? Text(
+                            values[i].trim()[0].toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.brand,
+                            ),
+                          )
+                        : Icon(icon, size: 20, color: AppColors.brand),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SelectableText(
+                      values[i],
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 1.3,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Длинные тексты (реферат, формула, описание) сворачиваются в карточки-аккордеоны.
+  Widget _textSection(String title, String html, {bool initiallyExpanded = false}) {
+    if (html.trim().isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: AppCard(
+          child: Row(
+            children: [
+              Expanded(child: Text(title, style: AppText.h3)),
+              const Text(
+                'Нет данных',
+                style: TextStyle(fontSize: 14, color: AppColors.inkTertiary),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     return Padding(
-      padding: const EdgeInsets.only(top: 24, left: 16, right: 16, bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
+      child: AppCard(
+        padding: EdgeInsets.zero,
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            initiallyExpanded: initiallyExpanded,
+            shape: const Border(),
+            collapsedShape: const Border(),
+            tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+            childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            expandedCrossAxisAlignment: CrossAxisAlignment.start,
+            iconColor: AppColors.brand,
+            collapsedIconColor: AppColors.brand,
+            title: Text(title, style: AppText.h3),
+            children: [
+              HtmlWidget(
+                html,
+                textStyle: const TextStyle(
+                  fontSize: 14.5,
+                  height: 1.5,
+                  color: AppColors.ink,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyCard() {
+    return const AppCard(
       child: Text(
-        text,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        'Нет данных',
+        style: TextStyle(fontSize: 14, color: AppColors.inkTertiary),
       ),
     );
   }
+}
 
-  List<Widget> _cards(List<String> values) {
-    if (values.isEmpty) return [_emptyNote()];
-    return values.map(_infoCard).toList();
-  }
+class _Tile {
+  final String label;
+  final String value;
+  final IconData icon;
 
-  Widget _infoCard(String text) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: SizedBox(
-        width: double.infinity,
-        child: Padding(padding: const EdgeInsets.all(12), child: Text(text)),
-      ),
-    );
-  }
-
-  Widget _html(String html) {
-    if (html.trim().isEmpty) return _emptyNote();
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: HtmlWidget(html),
-    );
-  }
-
-  Widget _emptyNote() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Text('Нет данных', style: TextStyle(color: Colors.black45)),
-    );
-  }
+  const _Tile(this.label, this.value, this.icon);
 }

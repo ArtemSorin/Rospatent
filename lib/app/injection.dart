@@ -10,6 +10,12 @@ import 'package:rospatent/features/favorites/domain/usecases/is_favorite.dart';
 import 'package:rospatent/features/favorites/domain/usecases/migrate_legacy_favorites.dart';
 import 'package:rospatent/features/favorites/domain/usecases/remove_favorite.dart';
 import 'package:rospatent/features/favorites/domain/usecases/restore_favorite.dart';
+import 'package:rospatent/features/history/data/datasources/search_history_local_data_source.dart';
+import 'package:rospatent/features/history/data/repositories/search_history_repository_impl.dart';
+import 'package:rospatent/features/history/domain/usecases/add_search_history.dart';
+import 'package:rospatent/features/history/domain/usecases/clear_search_history.dart';
+import 'package:rospatent/features/history/domain/usecases/get_search_history.dart';
+import 'package:rospatent/features/history/domain/usecases/remove_search_history.dart';
 import 'package:rospatent/features/patents/data/datasources/rospatent_remote_data_source.dart';
 import 'package:rospatent/features/patents/data/repositories/patent_repository_impl.dart';
 import 'package:rospatent/features/patents/domain/usecases/get_patent_details.dart';
@@ -28,6 +34,11 @@ class AppDependencies {
   final IsFavorite isFavorite;
   final MigrateLegacyFavorites migrateLegacyFavorites;
 
+  final GetSearchHistory getSearchHistory;
+  final AddSearchHistory addSearchHistory;
+  final RemoveSearchHistory removeSearchHistory;
+  final ClearSearchHistory clearSearchHistory;
+
   final ComputePatentStats computePatentStats;
 
   const AppDependencies({
@@ -39,6 +50,10 @@ class AppDependencies {
     required this.restoreFavorite,
     required this.isFavorite,
     required this.migrateLegacyFavorites,
+    required this.getSearchHistory,
+    required this.addSearchHistory,
+    required this.removeSearchHistory,
+    required this.clearSearchHistory,
     required this.computePatentStats,
   });
 
@@ -53,6 +68,9 @@ class AppDependencies {
       FavoritesLocalDataSource(),
     );
     final legacyStore = LegacyFavoritesDataSource();
+    final historyRepository = SearchHistoryRepositoryImpl(
+      SearchHistoryLocalDataSource(),
+    );
 
     // domain
     return AppDependencies(
@@ -68,6 +86,10 @@ class AppDependencies {
         favoritesRepository,
         patentRepository,
       ),
+      getSearchHistory: GetSearchHistory(historyRepository),
+      addSearchHistory: AddSearchHistory(historyRepository),
+      removeSearchHistory: RemoveSearchHistory(historyRepository),
+      clearSearchHistory: ClearSearchHistory(historyRepository),
       computePatentStats: const ComputePatentStats(),
     );
   }

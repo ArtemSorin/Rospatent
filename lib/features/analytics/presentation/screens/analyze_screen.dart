@@ -3,6 +3,10 @@ import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:rospatent/app/app_scope.dart';
+import 'package:rospatent/core/theme/app_colors.dart';
+import 'package:rospatent/core/theme/app_text.dart';
+import 'package:rospatent/core/utils/text_utils.dart';
+import 'package:rospatent/core/widgets/app_ui.dart';
 import 'package:rospatent/core/widgets/custom_app_bar.dart';
 import 'package:rospatent/features/analytics/domain/entities/patent_stats.dart';
 import 'package:rospatent/features/patents/domain/entities/document_kind.dart';
@@ -12,14 +16,14 @@ import 'package:rospatent/features/patents/domain/entities/search_query.dart';
 import '../controllers/analytics_controller.dart';
 
 const _palette = <Color>[
-  Color(0xFF2962FF),
-  Color(0xFF00BFA5),
-  Color(0xFFFFB300),
-  Color(0xFF7E57C2),
-  Color(0xFFEF5350),
-  Color(0xFF66BB6A),
-  Color(0xFFFF7043),
-  Color(0xFF78909C),
+  Color(0xFF0D4CD3), // фирменный синий
+  Color(0xFF6B9BFF), // светло-синий
+  Color(0xFF0B1F35), // тёмно-синий
+  Color(0xFF14B8A6), // бирюзовый
+  Color(0xFFF5A623), // янтарный
+  Color(0xFF7B61FF), // фиолетовый
+  Color(0xFFE5484D), // красный
+  Color(0xFF8A97AB), // серо-голубой
 ];
 
 /// Аналитика по результатам поиска.
@@ -66,40 +70,18 @@ class _AnalyzePageState extends State<AnalyzePage> {
 
   // ---------- общие элементы ----------
 
-  BoxDecoration get _cardDecoration => BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(12),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.grey.withOpacity(0.15),
-        spreadRadius: 1,
-        blurRadius: 8,
-        offset: const Offset(0, 3),
-      ),
-    ],
-  );
-
   Widget _card(String title, String? subtitle, Widget child) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: _cardDecoration,
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-          ),
+          Text(title, style: AppText.h3),
           if (subtitle != null) ...[
             const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
-            ),
+            Text(subtitle, style: AppText.caption),
           ],
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           child,
         ],
       ),
@@ -108,23 +90,28 @@ class _AnalyzePageState extends State<AnalyzePage> {
 
   Widget _statTile(String label, String value, IconData icon) {
     return Expanded(
-      child: Container(
+      child: AppCard(
         padding: const EdgeInsets.all(12),
-        decoration: _cardDecoration,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 20, color: Colors.blueAccent),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: AppColors.brandSoft,
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(icon, size: 18, color: AppColors.brand),
+            ),
+            const SizedBox(height: 10),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(value, style: AppText.h2),
             ),
             const SizedBox(height: 2),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
-            ),
+            Text(label, style: AppText.caption),
           ],
         ),
       ),
@@ -141,18 +128,23 @@ class _AnalyzePageState extends State<AnalyzePage> {
         : 'Анализ текущей страницы: ${s.sampleSize} из ${s.totalFound} патентов';
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.blueAccent.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.brandSoft,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline, size: 18, color: Colors.blueAccent),
-          const SizedBox(width: 8),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
+          const Icon(Icons.info_outline_rounded, size: 20, color: AppColors.brand),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 13, height: 1.35, color: AppColors.ink),
+            ),
+          ),
         ],
       ),
     );
@@ -168,7 +160,7 @@ class _AnalyzePageState extends State<AnalyzePage> {
     final maxY = maxV + math.max(1, (maxV * 0.15).ceil());
     final yInterval = math.max(1, (maxY / 4).ceil()).toDouble();
     final step = math.max(1, (years.length / 6).ceil());
-    const axisStyle = TextStyle(fontSize: 11, color: Colors.black54);
+    const axisStyle = TextStyle(fontSize: 11, color: AppColors.inkSecondary);
 
     return _card(
       'Публикации по годам',
@@ -179,7 +171,11 @@ class _AnalyzePageState extends State<AnalyzePage> {
           BarChartData(
             minY: 0,
             maxY: maxY.toDouble(),
-            gridData: const FlGridData(drawVerticalLine: false),
+            gridData: FlGridData(
+              drawVerticalLine: false,
+              getDrawingHorizontalLine: (value) =>
+                  FlLine(color: AppColors.line, strokeWidth: 1),
+            ),
             borderData: FlBorderData(show: false),
             barTouchData: BarTouchData(
               touchTooltipData: BarTouchTooltipData(
@@ -296,7 +292,7 @@ class _AnalyzePageState extends State<AnalyzePage> {
                     ),
                     const Text(
                       'патентов',
-                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                      style: TextStyle(fontSize: 12, color: AppColors.inkSecondary),
                     ),
                   ],
                 ),
@@ -359,7 +355,7 @@ class _AnalyzePageState extends State<AnalyzePage> {
                       e.key,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 13),
+                      style: const TextStyle(fontSize: 13.5, height: 1.3),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -377,9 +373,9 @@ class _AnalyzePageState extends State<AnalyzePage> {
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
                   value: e.value / maxV,
-                  minHeight: 6,
+                  minHeight: 8,
                   color: color,
-                  backgroundColor: color.withOpacity(0.12),
+                  backgroundColor: AppColors.bg,
                 ),
               ),
             ],
@@ -410,41 +406,37 @@ class _AnalyzePageState extends State<AnalyzePage> {
       builder: (context, _) {
         final s = _controller.stats;
         return Scaffold(
-          backgroundColor: Colors.grey.shade100,
-          appBar: CustomAppBar(
-            title: "Аналитика",
-            centerTitle: true,
-            leading: IconButton(
-              color: Colors.blueAccent,
-              icon: const Icon(Icons.arrow_back_ios),
-              tooltip: 'Назад',
-              onPressed: () => Navigator.pop(context),
-            ),
+          appBar: const CustomAppBar(
+            title: 'Аналитика',
+            leading: AppBackButton(),
           ),
           body: Column(
             children: [
-              if (_loading) const LinearProgressIndicator(minHeight: 2),
+              if (_loading) const LinearProgressIndicator(minHeight: 3),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
                     _scopeBanner(s),
-                    Row(
+                    IntrinsicHeight(
+                      child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _statTile('Найдено', '${s.totalFound}', Icons.search),
+                        _statTile('Найдено', formatInt(s.totalFound), Icons.search_rounded),
                         const SizedBox(width: 8),
                         _statTile(
-                          'Проанализировано',
-                          '${s.sampleSize}',
-                          Icons.analytics_outlined,
+                          'В выборке',
+                          formatInt(s.sampleSize),
+                          Icons.bar_chart_rounded,
                         ),
                         const SizedBox(width: 8),
                         _statTile(
-                          'Правообладателей',
-                          '${s.uniquePatentees}',
+                          'Владельцев',
+                          formatInt(s.uniquePatentees),
                           Icons.business_outlined,
                         ),
                       ],
+                    ),
                     ),
                     const SizedBox(height: 16),
                     _yearsCard(s),

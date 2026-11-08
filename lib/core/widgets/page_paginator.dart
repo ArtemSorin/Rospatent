@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:rospatent/core/theme/app_colors.dart';
+import 'package:rospatent/core/theme/app_text.dart';
 
 /// Какие элементы показывать в пагинаторе: номера страниц (с 0) и null — «…».
 /// Всегда не больше 7 элементов, поэтому влезает на любой экран, даже если
@@ -39,23 +41,26 @@ class PagePaginator extends StatelessWidget {
     final canGoBack = enabled && currentPage > 0;
     final canGoForward = enabled && currentPage < totalPages - 1;
 
-    return Material(
-      color: Colors.white,
-      elevation: 8,
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: AppColors.line)),
+      ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 _ArrowButton(
-                  icon: Icons.chevron_left,
+                  icon: Icons.chevron_left_rounded,
                   tooltip: 'Предыдущая страница',
                   onPressed: canGoBack ? () => onPageSelected(currentPage - 1) : null,
                 ),
+                const SizedBox(width: 6),
                 for (final item in items)
                   item == null
                       ? _PageButton(
@@ -70,8 +75,9 @@ class PagePaginator extends StatelessWidget {
                               ? () => onPageSelected(item)
                               : null,
                         ),
+                const SizedBox(width: 6),
                 _ArrowButton(
-                  icon: Icons.chevron_right,
+                  icon: Icons.chevron_right_rounded,
                   tooltip: 'Следующая страница',
                   onPressed: canGoForward ? () => onPageSelected(currentPage + 1) : null,
                 ),
@@ -96,7 +102,10 @@ class PagePaginator extends StatelessWidget {
         }
 
         return AlertDialog(
-          title: const Text('Перейти на страницу'),
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: const Text('Перейти на страницу', style: AppText.h3),
           content: TextField(
             controller: controller,
             autofocus: true,
@@ -109,12 +118,16 @@ class PagePaginator extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
               child: const Text('Отмена'),
             ),
-            TextButton(onPressed: submit, child: const Text('Перейти')),
+            ElevatedButton(
+              onPressed: submit,
+              style: ElevatedButton.styleFrom(minimumSize: const Size(0, 44)),
+              child: const Text('Перейти'),
+            ),
           ],
         );
       },
     );
-    controller.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     if (page != null && page != currentPage) onPageSelected(page);
   }
 }
@@ -132,17 +145,16 @@ class _PageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Material(
-        color: selected ? color : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
+        color: selected ? AppColors.brand : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
           onTap: onPressed,
           child: Container(
-            constraints: const BoxConstraints(minWidth: 38, minHeight: 38),
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             padding: const EdgeInsets.symmetric(horizontal: 8),
             alignment: Alignment.center,
             child: Text(
@@ -150,7 +162,7 @@ class _PageButton extends StatelessWidget {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: selected ? Colors.white : Colors.black87,
+                color: selected ? Colors.white : AppColors.ink,
               ),
             ),
           ),
@@ -173,11 +185,26 @@ class _ArrowButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(icon),
-      tooltip: tooltip,
-      color: Theme.of(context).colorScheme.primary,
-      onPressed: onPressed,
+    final enabled = onPressed != null;
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: enabled ? AppColors.brandSoft : AppColors.bg,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onPressed,
+          child: SizedBox(
+            width: 40,
+            height: 40,
+            child: Icon(
+              icon,
+              size: 26,
+              color: enabled ? AppColors.brand : const Color(0xFFB7C1D1),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

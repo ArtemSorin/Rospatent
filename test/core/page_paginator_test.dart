@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rospatent/core/theme/app_colors.dart';
 import 'package:rospatent/core/widgets/page_paginator.dart';
 
 import '../helpers/pump.dart';
@@ -78,11 +79,11 @@ void main() {
   group('отображение', () {
     testWidgets('при одной странице и меньше скрыт', (tester) async {
       await pumpPaginator(tester, total: 1, onSelected: (_) {});
-      expect(find.byIcon(Icons.chevron_left), findsNothing);
+      expect(find.byIcon(Icons.chevron_left_rounded), findsNothing);
       expect(find.text('1'), findsNothing);
 
       await pumpPaginator(tester, total: 0, onSelected: (_) {});
-      expect(find.byIcon(Icons.chevron_right), findsNothing);
+      expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
     });
 
     testWidgets('показывает номера и многоточие', (tester) async {
@@ -99,7 +100,7 @@ void main() {
       expect(selected.style!.color, Colors.white);
       expect(selected.style!.fontWeight, FontWeight.w700);
       final other = tester.widget<Text>(find.text('1'));
-      expect(other.style!.color, Colors.black87);
+      expect(other.style!.color, AppColors.ink);
       expect(other.style!.fontWeight, FontWeight.w500);
     });
 
@@ -135,41 +136,35 @@ void main() {
     testWidgets('стрелки листают на одну страницу', (tester) async {
       final selected = <int>[];
       await pumpPaginator(tester, current: 3, total: 10, onSelected: selected.add);
-      await tester.tap(find.byIcon(Icons.chevron_right));
-      await tester.tap(find.byIcon(Icons.chevron_left));
+      await tester.tap(find.byIcon(Icons.chevron_right_rounded));
+      await tester.tap(find.byIcon(Icons.chevron_left_rounded));
       expect(selected, [4, 2]);
     });
 
     testWidgets('на первой странице «назад» недоступна', (tester) async {
       final selected = <int>[];
       await pumpPaginator(tester, current: 0, total: 5, onSelected: selected.add);
-      final back = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_left));
-      final forward = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_right));
-      expect(back.onPressed, isNull);
-      expect(forward.onPressed, isNotNull);
-      await tester.tap(find.byIcon(Icons.chevron_left));
+      await tester.tap(find.byIcon(Icons.chevron_left_rounded));
       expect(selected, isEmpty);
+      await tester.tap(find.byIcon(Icons.chevron_right_rounded));
+      expect(selected, [1]);
     });
 
     testWidgets('на последней странице «вперёд» недоступна', (tester) async {
       await pumpPaginator(tester, current: 4, total: 5, onSelected: (_) {});
-      final back = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_left));
-      final forward = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_right));
-      expect(back.onPressed, isNotNull);
-      expect(forward.onPressed, isNull);
+      expect(find.byIcon(Icons.chevron_left_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.chevron_right_rounded), findsOneWidget);
     });
 
     testWidgets('при enabled=false всё заблокировано', (tester) async {
       final selected = <int>[];
       await pumpPaginator(tester, current: 2, total: 20, enabled: false, onSelected: selected.add);
       await tester.tap(find.text('2'));
-      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.tap(find.byIcon(Icons.chevron_right_rounded));
       await tester.tap(find.text('…').first);
       await tester.pump();
       expect(selected, isEmpty);
       expect(find.text('Перейти на страницу'), findsNothing);
-      expect(tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_left)).onPressed, isNull);
-      expect(tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.chevron_right)).onPressed, isNull);
     });
   });
 

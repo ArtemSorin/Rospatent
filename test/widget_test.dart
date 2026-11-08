@@ -10,12 +10,19 @@ import 'package:rospatent/features/patents/presentation/screens/home_screen.dart
 import 'helpers/fakes.dart';
 
 void main() {
-  testWidgets('приложение запускается на экране поиска', (WidgetTester tester) async {
-    await tester.pumpWidget(AppScope(dependencies: buildDeps(), child: const App()));
+  testWidgets('приложение запускается на экране поиска', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      AppScope(dependencies: buildDeps(), child: const App()),
+    );
 
     expect(find.byType(HomePage), findsOneWidget);
     expect(find.text('Роспатент'), findsOneWidget);
-    expect(find.text('Поиск по тексту'), findsOneWidget);
-    expect(find.byIcon(Icons.star_border), findsOneWidget); // вкладка «Избранное»
+    expect(find.text('Поиск по тексту патентов'), findsOneWidget);
+    expect(
+      find.byIcon(Icons.star_outline_rounded),
+      findsOneWidget,
+    ); // вкладка «Избранное»
   });
 }

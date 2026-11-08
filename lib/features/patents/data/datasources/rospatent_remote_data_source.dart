@@ -9,14 +9,11 @@ import 'package:rospatent/core/error/failure.dart';
 /// без знания о доменных сущностях.
 class RospatentRemoteDataSource {
   RospatentRemoteDataSource({
-    required http.Client client,
+    required this._client,
     required String apiKey,
-    String baseUrl = 'https://searchplatform.rospatent.gov.ru/patsearch/v0.2/',
-    Duration timeout = const Duration(seconds: 30),
-  }) : _client = client,
-       _baseUrl = baseUrl,
-       _timeout = timeout,
-       _headers = {
+    this._baseUrl = 'https://searchplatform.rospatent.gov.ru/patsearch/v0.2/',
+    this._timeout = const Duration(seconds: 30),
+  }) : _headers = {
          'Content-Type': 'application/json',
          'Authorization': apiKey,
        };

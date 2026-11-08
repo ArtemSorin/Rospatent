@@ -7,6 +7,9 @@ class SearchButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(onPressed: onPressed, child: const Text("Поиск"));
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(onPressed: onPressed, child: const Text('Найти')),
+    );
   }
 }

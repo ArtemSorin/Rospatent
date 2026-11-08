@@ -9,16 +9,13 @@ import 'package:rospatent/features/patents/domain/usecases/get_patent_details.da
 
 class PatentDetailsController extends ChangeNotifier {
   PatentDetailsController({
-    required GetPatentDetails getPatentDetails,
-    required IsFavorite isFavorite,
-    required AddFavorite addFavorite,
-    required RemoveFavorite removeFavorite,
+    required this._getPatentDetails,
+    required this._isFavorite,
+    required this._addFavorite,
+    required this._removeFavorite,
     required this.patentId,
     this.hint,
-  }) : _getPatentDetails = getPatentDetails,
-       _isFavorite = isFavorite,
-       _addFavorite = addFavorite,
-       _removeFavorite = removeFavorite;
+  });
 
   final GetPatentDetails _getPatentDetails;
   final IsFavorite _isFavorite;

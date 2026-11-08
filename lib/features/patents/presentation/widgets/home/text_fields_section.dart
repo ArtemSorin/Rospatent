@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:rospatent/core/theme/app_text.dart';
+import 'package:rospatent/core/widgets/app_ui.dart';
 
 class TextFieldsSection extends StatelessWidget {
   final TextEditingController patenteeController;
@@ -12,31 +14,36 @@ class TextFieldsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const TextField(
-          decoration: InputDecoration(
-            hintText: "Номер заявки",
-            prefixIcon: Icon(Icons.confirmation_number_outlined),
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Уточнить поиск', style: AppText.h3),
+          const SizedBox(height: 14),
+          const TextField(
+            decoration: InputDecoration(
+              hintText: 'Номер заявки',
+              prefixIcon: Icon(Icons.confirmation_number_outlined),
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: authorsController,
-          decoration: const InputDecoration(
-            hintText: "Авторы (ФИО через запятую)",
-            prefixIcon: Icon(Icons.person_outline),
+          const SizedBox(height: 12),
+          TextField(
+            controller: authorsController,
+            decoration: const InputDecoration(
+              hintText: 'Авторы (ФИО через запятую)',
+              prefixIcon: Icon(Icons.person_outline_rounded),
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: patenteeController,
-          decoration: const InputDecoration(
-            hintText: "Патентообладатели (ФИО через запятую)",
-            prefixIcon: Icon(Icons.business_outlined),
+          const SizedBox(height: 12),
+          TextField(
+            controller: patenteeController,
+            decoration: const InputDecoration(
+              hintText: 'Патентообладатели (ФИО через запятую)',
+              prefixIcon: Icon(Icons.business_outlined),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

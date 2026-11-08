@@ -40,7 +40,7 @@ void main() {
       expect(find.text('Анализ текущей страницы: 10 из 10 патентов'), findsOneWidget);
       expect(patents.searchCalls, isEmpty); // расширять нечего
 
-      for (final label in ['Найдено', 'Проанализировано', 'Правообладателей']) {
+      for (final label in ['Найдено', 'В выборке', 'Владельцев']) {
         expect(find.text(label), findsOneWidget, reason: label);
       }
       for (final title in [
@@ -179,7 +179,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Аналитика'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.arrow_back_ios));
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
     await tester.pumpAndSettle();
     expect(find.text('Аналитика'), findsNothing);
   });

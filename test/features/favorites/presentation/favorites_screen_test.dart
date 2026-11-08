@@ -45,8 +45,13 @@ void main() {
       await openFavorites(tester);
       await tester.pumpAndSettle();
       expect(find.text('У вас пока нет избранных патентов'), findsOneWidget);
-      expect(find.text('Добавляйте патенты в избранное, чтобы быстро находить их позже'), findsOneWidget);
-      expect(find.byIcon(Icons.star_border), findsOneWidget);
+      expect(
+        find.text(
+          'Добавляйте патенты в избранное, чтобы быстро находить их позже',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byIcon(Icons.star_outline_rounded), findsOneWidget);
     });
 
     testWidgets('ошибка загрузки — сообщение без подсказки', (tester) async {
@@ -54,22 +59,28 @@ void main() {
       await openFavorites(tester);
       await tester.pumpAndSettle();
       expect(find.text('Не удалось загрузить избранное'), findsOneWidget);
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
-      expect(find.text('Добавляйте патенты в избранное, чтобы быстро находить их позже'), findsNothing);
+      expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
+      expect(
+        find.text(
+          'Добавляйте патенты в избранное, чтобы быстро находить их позже',
+        ),
+        findsNothing,
+      );
     });
 
     testWidgets('шапка: заголовок и кнопки', (tester) async {
       await openFavorites(tester);
       await tester.pumpAndSettle();
       expect(find.text('Избранное'), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.account_circle_outlined));
-      await tester.tap(find.byIcon(Icons.notifications_none));
+      await tester.tap(find.byIcon(Icons.notifications_none_rounded));
       expect(tester.takeException(), isNull);
     });
   });
 
   group('карточка избранного', () {
-    testWidgets('показывает название, описание, идентификаторы и данные', (tester) async {
+    testWidgets('показывает название, описание, идентификаторы и данные', (
+      tester,
+    ) async {
       favorites.store['A'] = makeFavorite(id: 'A');
       await openFavorites(tester);
       await tester.pumpAndSettle();
@@ -82,12 +93,19 @@ void main() {
       expect(findRich('МПК: G06F 17/30'), findsOneWidget);
       expect(findRich('Авторы: Иванов И.И., Петров П.П.'), findsOneWidget);
       expect(findRich('Правообладатель: ООО Ромашка'), findsOneWidget);
-      expect(findRich('Даты: подана 28.03.2018 · опубликована 25.09.2019'), findsOneWidget);
+      expect(
+        findRich('Даты: подана 28.03.2018 · опубликована 25.09.2019'),
+        findsOneWidget,
+      );
       expect(findRich('ID: A'), findsOneWidget);
     });
 
     testWidgets('пустые поля не выводятся', (tester) async {
-      favorites.store['X'] = FavoritePatent(id: 'X', title: '', addedAt: DateTime(2024));
+      favorites.store['X'] = FavoritePatent(
+        id: 'X',
+        title: '',
+        addedAt: DateTime(2024),
+      );
       await openFavorites(tester);
       await tester.pumpAndSettle();
 
@@ -103,7 +121,11 @@ void main() {
     });
 
     testWidgets('без правообладателя показывается заявитель', (tester) async {
-      favorites.store['A'] = makeFavorite(id: 'A', patentees: '', applicant: 'ИП Кузнецов');
+      favorites.store['A'] = makeFavorite(
+        id: 'A',
+        patentees: '',
+        applicant: 'ИП Кузнецов',
+      );
       await openFavorites(tester);
       await tester.pumpAndSettle();
       expect(findRich('Правообладатель: ИП Кузнецов'), findsOneWidget);
@@ -111,10 +133,16 @@ void main() {
 
     testWidgets('в «Даты» попадает только то, что известно', (tester) async {
       favorites.store['A'] = FavoritePatent(
-        id: 'A', title: 'T', filingDate: DateTime(2018, 3, 28), addedAt: DateTime(2024),
+        id: 'A',
+        title: 'T',
+        filingDate: DateTime(2018, 3, 28),
+        addedAt: DateTime(2024),
       );
       favorites.store['B'] = FavoritePatent(
-        id: 'B', title: 'T', publicationDate: DateTime(2019, 9, 25), addedAt: DateTime(2023),
+        id: 'B',
+        title: 'T',
+        publicationDate: DateTime(2019, 9, 25),
+        addedAt: DateTime(2023),
       );
       await openFavorites(tester);
       await tester.pumpAndSettle();
@@ -122,21 +150,41 @@ void main() {
       expect(findRich('Даты: опубликована 25.09.2019'), findsOneWidget);
     });
 
-    testWidgets('описание скрыто, если пустое; публикация без номера документа', (tester) async {
-      favorites.store['A'] = makeFavorite(id: 'A', description: '', documentNumber: null, country: 'RU', kind: 'U1');
-      await openFavorites(tester);
-      await tester.pumpAndSettle();
-      expect(find.text('Краткое описание патента'), findsNothing);
-      expect(findRich('Публикация: RU U1'), findsOneWidget);
-      expect(find.text('Полезная модель'), findsOneWidget);
-    });
+    testWidgets(
+      'описание скрыто, если пустое; публикация без номера документа',
+      (tester) async {
+        favorites.store['A'] = makeFavorite(
+          id: 'A',
+          description: '',
+          documentNumber: null,
+          country: 'RU',
+          kind: 'U1',
+        );
+        await openFavorites(tester);
+        await tester.pumpAndSettle();
+        expect(find.text('Краткое описание патента'), findsNothing);
+        expect(findRich('Публикация: RU U1'), findsOneWidget);
+        expect(find.text('Полезная модель'), findsOneWidget);
+      },
+    );
 
     testWidgets('новые записи идут выше старых', (tester) async {
-      favorites.store['old'] = makeFavorite(id: 'old', title: 'Старый', addedAt: DateTime(2020));
-      favorites.store['new'] = makeFavorite(id: 'new', title: 'Новый', addedAt: DateTime(2024));
+      favorites.store['old'] = makeFavorite(
+        id: 'old',
+        title: 'Старый',
+        addedAt: DateTime(2020),
+      );
+      favorites.store['new'] = makeFavorite(
+        id: 'new',
+        title: 'Новый',
+        addedAt: DateTime(2024),
+      );
       await openFavorites(tester);
       await tester.pumpAndSettle();
-      expect(tester.getTopLeft(find.text('Новый')).dy, lessThan(tester.getTopLeft(find.text('Старый')).dy));
+      expect(
+        tester.getTopLeft(find.text('Новый')).dy,
+        lessThan(tester.getTopLeft(find.text('Старый')).dy),
+      );
     });
   });
 
@@ -146,7 +194,7 @@ void main() {
       await openFavorites(tester);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.star));
+      await tester.tap(find.byIcon(Icons.star_rounded));
       await tester.pumpAndSettle();
       expect(find.text('Первый'), findsNothing);
       expect(find.text('Удалено из избранного'), findsOneWidget);
@@ -161,7 +209,11 @@ void main() {
 
     testWidgets('свайп влево удаляет патент', (tester) async {
       favorites.store['A'] = makeFavorite(id: 'A', title: 'Первый');
-      favorites.store['B'] = makeFavorite(id: 'B', title: 'Второй', addedAt: DateTime(2025));
+      favorites.store['B'] = makeFavorite(
+        id: 'B',
+        title: 'Второй',
+        addedAt: DateTime(2025),
+      );
       await openFavorites(tester);
       await tester.pumpAndSettle();
 
@@ -185,54 +237,73 @@ void main() {
     });
   });
 
-  testWidgets('экран закрыт во время удаления — снекбар не показывается и ошибок нет', (tester) async {
-    favorites.store['A'] = makeFavorite(id: 'A');
-    favorites.removeGate = Completer<void>();
-    useTallScreen(tester);
-    await pumpPushed(tester, () => const FavoritePage(), deps: buildDeps(patents: patents, favorites: favorites));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'экран закрыт во время удаления — снекбар не показывается и ошибок нет',
+    (tester) async {
+      favorites.store['A'] = makeFavorite(id: 'A');
+      favorites.removeGate = Completer<void>();
+      useTallScreen(tester);
+      await pumpPushed(
+        tester,
+        () => const FavoritePage(),
+        deps: buildDeps(patents: patents, favorites: favorites),
+      );
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.star)); // удаление зависло на removeGate
-    await tester.pump();
+      await tester.tap(
+        find.byIcon(Icons.star_rounded),
+      ); // удаление зависло на removeGate
+      await tester.pump();
 
-    tester.state<NavigatorState>(find.byType(Navigator)).pop(); // закрываем экран
-    await tester.pumpAndSettle();
-    expect(find.byType(FavoritePage), findsNothing);
+      tester
+          .state<NavigatorState>(find.byType(Navigator))
+          .pop(); // закрываем экран
+      await tester.pumpAndSettle();
+      expect(find.byType(FavoritePage), findsNothing);
 
-    favorites.removeGate!.complete();
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
-    expect(find.text('Удалено из избранного'), findsNothing);
-    expect(favorites.store, isEmpty);
-  });
+      favorites.removeGate!.complete();
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.text('Удалено из избранного'), findsNothing);
+      expect(favorites.store, isEmpty);
+    },
+  );
 
   group('открытие патента', () {
-    testWidgets('нажатие на карточку открывает экран патента с данными из избранного', (tester) async {
-      favorites.store['A'] = makeFavorite(id: 'A', title: 'Первый');
-      await openFavorites(tester);
-      await tester.pumpAndSettle();
+    testWidgets(
+      'нажатие на карточку открывает экран патента с данными из избранного',
+      (tester) async {
+        favorites.store['A'] = makeFavorite(id: 'A', title: 'Первый');
+        await openFavorites(tester);
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Первый'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Первый'));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(PatentDetailsPage), findsOneWidget);
-      expect(patents.detailsCalls, ['A']);
-    });
+        expect(find.byType(PatentDetailsPage), findsOneWidget);
+        expect(patents.detailsCalls, ['A']);
+      },
+    );
 
-    testWidgets('убрали патент из избранного на его экране — список обновляется после возврата', (tester) async {
-      favorites.store['A'] = makeFavorite(id: 'A', title: 'Первый');
-      await openFavorites(tester);
-      await tester.pumpAndSettle();
+    testWidgets(
+      'убрали патент из избранного на его экране — список обновляется после возврата',
+      (tester) async {
+        favorites.store['A'] = makeFavorite(id: 'A', title: 'Первый');
+        await openFavorites(tester);
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Первый'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.star)); // патент уже в избранном → убираем
-      await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.arrow_back_ios));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Первый'));
+        await tester.pumpAndSettle();
+        await tester.tap(
+          find.byIcon(Icons.star_rounded),
+        ); // патент уже в избранном → убираем
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+        await tester.pumpAndSettle();
 
-      expect(find.byType(PatentDetailsPage), findsNothing);
-      expect(find.text('У вас пока нет избранных патентов'), findsOneWidget);
-    });
+        expect(find.byType(PatentDetailsPage), findsNothing);
+        expect(find.text('У вас пока нет избранных патентов'), findsOneWidget);
+      },
+    );
   });
 }

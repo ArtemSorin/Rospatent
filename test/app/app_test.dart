@@ -6,6 +6,7 @@ import 'package:rospatent/app/main_shell.dart';
 
 import '../helpers/fakes.dart';
 import '../helpers/pump.dart';
+import 'package:rospatent/core/theme/app_colors.dart';
 
 void main() {
   Future<void> openApp(WidgetTester tester) async {
@@ -23,14 +24,14 @@ void main() {
     await openApp(tester);
     final theme = tester.widget<MaterialApp>(find.byType(MaterialApp)).theme!;
 
-    expect(theme.colorScheme.primary, Colors.blueAccent);
+    expect(theme.colorScheme.primary, AppColors.brand);
     expect(theme.inputDecorationTheme.filled, isTrue);
-    expect(theme.inputDecorationTheme.fillColor, Colors.grey.shade100);
-    expect(theme.inputDecorationTheme.prefixIconColor, Colors.grey);
+    expect(theme.inputDecorationTheme.fillColor, AppColors.bg);
+    expect(theme.inputDecorationTheme.prefixIconColor, AppColors.inkTertiary);
 
     // кнопка «Поиск» на главной растягивается по ширине и имеет высоту 50
     final size = tester.getSize(find.byType(ElevatedButton));
-    expect(size.height, 50);
+    expect(size.height, 54);
     expect(size.width, greaterThan(200));
   });
 }

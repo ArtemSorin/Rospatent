@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:rospatent/app/app_scope.dart';
-import 'package:rospatent/core/widgets/custom_app_bar.dart';
+import 'package:rospatent/core/theme/app_colors.dart';
+import 'package:rospatent/core/theme/app_text.dart';
+import 'package:rospatent/core/widgets/app_ui.dart';
+import 'package:rospatent/core/widgets/hero_header.dart';
 import 'package:rospatent/features/favorites/domain/entities/favorite_patent.dart';
 import 'package:rospatent/features/patents/domain/entities/document_kind.dart';
 import 'package:rospatent/features/patents/presentation/screens/patent_details_screen.dart';
@@ -71,56 +75,86 @@ class _FavoritePageState extends State<FavoritePage> {
       builder: (context, _) {
         final c = _controller;
         return Scaffold(
-          backgroundColor: Colors.grey.shade100,
-          appBar: CustomAppBar(
-            title: "Избранное",
-            centerTitle: true,
-            leading: IconButton(
-              icon: const Icon(Icons.account_circle_outlined),
-              color: Colors.blueAccent,
-              onPressed: () {},
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.notifications_none),
-                color: Colors.blueAccent,
-                onPressed: () {},
-              ),
-            ],
-          ),
-          body: c.loading
-              ? const Center(child: CircularProgressIndicator())
-              : c.error != null && c.items.isEmpty
-              ? _buildMessage(Icons.error_outline, c.error!, null)
-              : c.items.isEmpty
-              ? _buildMessage(
-                  Icons.star_border,
-                  "У вас пока нет избранных патентов",
-                  "Добавляйте патенты в избранное, чтобы быстро находить их позже",
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: c.items.length,
-                  itemBuilder: (context, index) {
-                    final item = c.items[index];
-                    return Dismissible(
-                      key: ValueKey(item.id),
-                      direction: DismissDirection.endToStart,
-                      background: Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent,
-                          borderRadius: BorderRadius.circular(16),
+          body: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle.light,
+            child: Column(
+              children: [
+                HeroHeader(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Избранное', style: AppText.onDarkTitle),
+                            const SizedBox(height: 6),
+                            Text(
+                              c.items.isEmpty
+                                  ? 'Сохранённые патенты'
+                                  : 'Сохранено: ${c.items.length}',
+                              style: AppText.onDarkBody,
+                            ),
+                          ],
                         ),
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: const Icon(Icons.delete, color: Colors.white),
                       ),
-                      onDismissed: (_) => _remove(item),
-                      child: _buildCard(item),
-                    );
-                  },
+                      HeroIconButton(
+                        icon: Icons.notifications_none_rounded,
+                        tooltip: 'Уведомления',
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
                 ),
+                Expanded(child: _buildBody(c)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBody(FavoritesController c) {
+    if (c.loading) return const Center(child: CircularProgressIndicator());
+    if (c.error != null && c.items.isEmpty) {
+      return StateView(
+        icon: Icons.error_outline_rounded,
+        isError: true,
+        title: 'Не удалось загрузить',
+        subtitle: c.error,
+        actionLabel: 'Повторить',
+        onAction: c.load,
+      );
+    }
+    if (c.items.isEmpty) {
+      return const StateView(
+        icon: Icons.star_outline_rounded,
+        title: 'У вас пока нет избранных патентов',
+        subtitle:
+            'Добавляйте патенты в избранное, чтобы быстро находить их позже',
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      itemCount: c.items.length,
+      itemBuilder: (context, index) {
+        final item = c.items[index];
+        return Dismissible(
+          key: ValueKey(item.id),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: AppColors.danger,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+          ),
+          onDismissed: (_) => _remove(item),
+          child: _buildCard(item),
         );
       },
     );
@@ -139,74 +173,64 @@ class _FavoritePageState extends State<FavoritePage> {
         'опубликована ${_dateFormat.format(f.publicationDate!)}',
     ].join(' · ');
 
-    return Card(
+    return AppCard(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => _open(f),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 12, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  if (f.kind.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blueAccent.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        documentKindLabel(f.kind),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.blueAccent,
-                        ),
-                      ),
-                    ),
-                  const Spacer(),
-                  IconButton(
-                    tooltip: 'Убрать из избранного',
-                    icon: const Icon(Icons.star, color: Colors.amber),
-                    onPressed: () => _remove(f),
-                  ),
-                ],
-              ),
-              Text(
-                f.title.isEmpty ? 'Без названия' : f.title,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              if (f.description.isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Text(
-                  f.description,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14, color: Colors.black87),
+      padding: EdgeInsets.zero,
+      onTap: () => _open(f),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 8, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (f.kind.isNotEmpty) AppTag(documentKindLabel(f.kind)),
+                const Spacer(),
+                IconButton(
+                  tooltip: 'Убрать из избранного',
+                  icon: const Icon(Icons.star_rounded, color: AppColors.amber),
+                  onPressed: () => _remove(f),
                 ),
               ],
-              const SizedBox(height: 10),
-              const Divider(height: 1),
-              const SizedBox(height: 8),
-              _row(Icons.confirmation_number_outlined, 'Заявка №', f.applicationNumber),
-              _row(Icons.article_outlined, 'Публикация', publication),
-              _row(Icons.category_outlined, 'МПК', f.ipc),
-              _row(Icons.person_outline, 'Авторы', f.inventors),
-              _row(Icons.business_outlined, 'Правообладатель', owner),
-              _row(Icons.event_outlined, 'Даты', dates),
-              _row(Icons.fingerprint, 'ID', f.id),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    f.title.isEmpty ? 'Без названия' : f.title,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16.5,
+                      height: 1.3,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (f.description.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      f.description,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.bodySecondary,
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  const Divider(height: 1),
+                  const SizedBox(height: 12),
+                  _row(Icons.confirmation_number_outlined, 'Заявка №', f.applicationNumber),
+                  _row(Icons.article_outlined, 'Публикация', publication),
+                  _row(Icons.category_outlined, 'МПК', f.ipc),
+                  _row(Icons.person_outline_rounded, 'Авторы', f.inventors),
+                  _row(Icons.business_outlined, 'Правообладатель', owner),
+                  _row(Icons.event_outlined, 'Даты', dates),
+                  _row(Icons.fingerprint_rounded, 'ID', f.id),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -215,60 +239,35 @@ class _FavoritePageState extends State<FavoritePage> {
   Widget _row(IconData icon, String label, String value) {
     if (value.trim().isEmpty) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: Colors.grey),
-          const SizedBox(width: 6),
+          Icon(icon, size: 16, color: AppColors.inkTertiary),
+          const SizedBox(width: 8),
           Expanded(
             child: Text.rich(
               TextSpan(
                 children: [
                   TextSpan(
                     text: '$label: ',
-                    style: const TextStyle(color: Colors.black54),
+                    style: const TextStyle(color: AppColors.inkSecondary),
                   ),
                   TextSpan(
                     text: value,
-                    style: const TextStyle(color: Colors.black87),
+                    style: const TextStyle(
+                      color: AppColors.ink,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 13),
+              style: const TextStyle(fontSize: 13, height: 1.35),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildMessage(IconData icon, String title, String? subtitle) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 64, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              textAlign: TextAlign.center,
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                subtitle,
-                style: const TextStyle(fontSize: 14, color: Colors.black54),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ],
-        ),
       ),
     );
   }

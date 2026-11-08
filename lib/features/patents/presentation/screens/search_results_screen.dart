@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rospatent/app/app_scope.dart';
+import 'package:rospatent/core/theme/app_colors.dart';
+import 'package:rospatent/core/widgets/app_ui.dart';
 import 'package:rospatent/core/widgets/custom_app_bar.dart';
 import 'package:rospatent/core/widgets/page_paginator.dart';
 import 'package:rospatent/features/analytics/presentation/screens/analyze_screen.dart';
@@ -66,26 +68,18 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
       builder: (context, _) {
         final page = _controller.page;
         return Scaffold(
-          backgroundColor: Colors.grey.shade100,
           appBar: CustomAppBar(
-            title: "Найденные патенты",
-            centerTitle: true,
-            leading: IconButton(
-              color: Colors.blueAccent,
-              icon: const Icon(Icons.arrow_back_ios),
-              tooltip: 'Назад',
-              onPressed: () => Navigator.pop(context),
-            ),
+            title: 'Найденные патенты',
+            leading: const AppBackButton(),
             actions: [
-              IconButton(
-                color: Colors.blueAccent,
+              AppBarButton(
                 tooltip: 'Анализировать результаты',
-                icon: const Icon(Icons.data_usage_outlined),
+                icon: Icons.bar_chart_rounded,
                 onPressed: page == null ? null : () => _openAnalytics(page),
               ),
             ],
           ),
-          bottomNavigationBar: page == null
+          bottomNavigationBar: page == null || _controller.totalPages <= 1
               ? null
               : PagePaginator(
                   currentPage: _controller.currentPage,
@@ -104,9 +98,11 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
 
     if (page == null) {
       if (_controller.error != null) {
-        return _MessageView(
-          icon: Icons.error_outline,
-          text: _controller.error!,
+        return StateView(
+          icon: Icons.wifi_off_rounded,
+          isError: true,
+          title: 'Не удалось загрузить',
+          subtitle: _controller.error!,
           actionLabel: 'Повторить',
           onAction: _controller.retry,
         );
@@ -123,19 +119,21 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
           totalPages: _controller.totalPages,
         ),
         if (_controller.loading)
-          const LinearProgressIndicator(minHeight: 2)
+          const LinearProgressIndicator(minHeight: 3)
         else
-          const SizedBox(height: 2),
+          const SizedBox(height: 3),
         if (_controller.error != null)
           _ErrorBanner(message: _controller.error!, onRetry: _controller.retry),
         Expanded(
           child: page.items.isEmpty
-              ? const _MessageView(
-                  icon: Icons.search_off,
-                  text: 'По вашему запросу ничего не найдено',
+              ? const StateView(
+                  icon: Icons.search_off_rounded,
+                  title: 'Ничего не найдено',
+                  subtitle: 'Попробуйте изменить запрос или расширить период',
                 )
               : ListView.builder(
                   controller: _scroll,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                   itemCount: page.items.length,
                   itemBuilder: (context, index) {
                     final patent = page.items[index];
@@ -159,45 +157,6 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
   }
 }
 
-class _MessageView extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-
-  const _MessageView({
-    required this.icon,
-    required this.text,
-    this.actionLabel,
-    this.onAction,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 56, color: Colors.grey.shade400),
-            const SizedBox(height: 12),
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
-            ),
-            if (actionLabel != null) ...[
-              const SizedBox(height: 16),
-              OutlinedButton(onPressed: onAction, child: Text(actionLabel!)),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _ErrorBanner extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
@@ -208,11 +167,15 @@ class _ErrorBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      color: Colors.red.shade50,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+      decoration: BoxDecoration(
+        color: AppColors.dangerSoft,
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, size: 18, color: Colors.red.shade700),
+          const Icon(Icons.error_outline_rounded, size: 20, color: AppColors.danger),
           const SizedBox(width: 8),
           Expanded(child: Text(message, style: const TextStyle(fontSize: 13))),
           TextButton(onPressed: onRetry, child: const Text('Повторить')),

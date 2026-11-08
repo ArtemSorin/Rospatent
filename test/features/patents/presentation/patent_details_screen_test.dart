@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:rospatent/core/error/failure.dart';
+import 'package:rospatent/core/theme/app_colors.dart';
+import 'package:rospatent/core/widgets/custom_app_bar.dart';
 import 'package:rospatent/features/patents/domain/entities/patent_details.dart';
 import 'package:rospatent/features/patents/presentation/screens/patent_details_screen.dart';
 
@@ -15,7 +17,11 @@ void main() {
   late FakePatentRepository patents;
   late InMemoryFavoritesRepository favorites;
 
-  Future<void> openDetails(WidgetTester tester, {hint, String id = 'RU2701234C1_20190925'}) async {
+  Future<void> openDetails(
+    WidgetTester tester, {
+    hint,
+    String id = 'RU2701234C1_20190925',
+  }) async {
     useTallScreen(tester);
     await pumpScoped(
       tester,
@@ -30,14 +36,18 @@ void main() {
   });
 
   group('загрузка', () {
-    testWidgets('пока документ грузится: индикатор и недоступная звезда', (tester) async {
+    testWidgets('пока документ грузится: индикатор и недоступная звезда', (
+      tester,
+    ) async {
       final gate = Completer<PatentDetails>();
       patents.detailsHandler = (id) => gate.future;
       await openDetails(tester);
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      final star = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.star_border));
+      final star = tester.widget<AppBarButton>(
+        find.widgetWithIcon(AppBarButton, Icons.star_outline_rounded),
+      );
       expect(star.onPressed, isNull);
 
       gate.complete(makeDetails());
@@ -50,14 +60,14 @@ void main() {
       await openDetails(tester);
       await tester.pumpAndSettle();
 
-      expect(find.text('Нет соединения с сервером'), findsOneWidget);
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      expect(find.text('Не удалось загрузить патент'), findsOneWidget);
+      expect(find.byIcon(Icons.wifi_off_rounded), findsOneWidget);
 
       patents.detailsHandler = null;
       await tester.tap(find.text('Повторить'));
       await tester.pumpAndSettle();
       expect(find.text('Способ обработки данных'), findsOneWidget);
-      expect(find.text('Нет соединения с сервером'), findsNothing);
+      expect(find.text('Не удалось загрузить патент'), findsNothing);
     });
 
     testWidgets('запрашивает документ по id', (tester) async {
@@ -77,9 +87,19 @@ void main() {
       expect(find.text('Патент на изобретение'), findsOneWidget);
 
       for (final section in [
-        'Авторы', 'Патентообладатели', 'Заявитель', 'Номер заявки', 'Публикация',
-        'Дата подачи заявки', 'Дата публикации', 'МПК и CPC', 'Идентификатор',
-        'Реферат', 'Формула', 'Описание',
+        'Авторы',
+        'Патентообладатели',
+        'Заявитель',
+        'Номер заявки',
+        'Публикация',
+        'Дата подачи',
+        'Дата публикации',
+        'МПК',
+        'CPC',
+        'Идентификатор',
+        'Реферат',
+        'Формула',
+        'Описание',
       ]) {
         expect(find.text(section), findsOneWidget, reason: section);
       }
@@ -89,17 +109,20 @@ void main() {
       expect(find.text('ООО Ромашка'), findsOneWidget);
       expect(find.text('ООО Заявитель'), findsOneWidget);
       expect(find.text('2018111222'), findsOneWidget);
-      expect(find.text('RU 2701234 C1'), findsOneWidget);
+      expect(find.text('RU 2701234 C1'), findsWidgets);
       expect(find.text('28.03.2018'), findsOneWidget);
       expect(find.text('25.09.2019'), findsOneWidget);
-      expect(find.text('G06F 17/30\nG06N 3/00'), findsOneWidget);
+      expect(find.text('G06F 17/30'), findsOneWidget);
+      expect(find.text('G06N 3/00'), findsOneWidget);
       expect(find.text('RU2701234C1_20190925'), findsOneWidget);
     });
 
-    testWidgets('реферат, формула и описание отображаются как HTML', (tester) async {
+    testWidgets('реферат, формула и описание отображаются как HTML', (
+      tester,
+    ) async {
       await openDetails(tester);
       await tester.pumpAndSettle();
-      expect(find.byType(HtmlWidget), findsNWidgets(3));
+      expect(find.byType(HtmlWidget), findsOneWidget);
       expect(find.text('Нет данных'), findsNothing);
     });
 
@@ -120,21 +143,34 @@ void main() {
       expect(find.text('Патент на изобретение'), findsNothing);
     });
 
-    testWidgets('МПК и CPC показываются, даже если заполнено только одно поле', (tester) async {
-      patents.detailsHandler = (id) async => makeDetails(id: id, cpc: '');
-      await openDetails(tester);
-      await tester.pumpAndSettle();
-      expect(find.text('МПК и CPC'), findsOneWidget);
-      expect(find.text('G06F 17/30'), findsOneWidget);
-    });
+    testWidgets(
+      'МПК и CPC показываются, даже если заполнено только одно поле',
+      (tester) async {
+        patents.detailsHandler = (id) async => makeDetails(id: id, cpc: '');
+        await openDetails(tester);
+        await tester.pumpAndSettle();
+        expect(find.text('МПК'), findsOneWidget);
+        expect(find.text('G06F 17/30'), findsOneWidget);
+      },
+    );
 
-    testWidgets('авторы и патентообладатели добираются из списка поиска', (tester) async {
+    testWidgets('авторы и патентообладатели добираются из списка поиска', (
+      tester,
+    ) async {
       patents.detailsHandler = (id) async => makeDetails(
-        id: id, title: '', inventors: const [], patentees: const [], applicant: '',
+        id: id,
+        title: '',
+        inventors: const [],
+        patentees: const [],
+        applicant: '',
       );
       await openDetails(
         tester,
-        hint: makeSummary(title: 'Из <em>поиска</em>', inventors: 'Сидоров С.С., Орлов О.О.', patentees: 'ИП Кузнецов'),
+        hint: makeSummary(
+          title: 'Из <em>поиска</em>',
+          inventors: 'Сидоров С.С., Орлов О.О.',
+          patentees: 'ИП Кузнецов',
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -149,36 +185,47 @@ void main() {
     testWidgets('звезда добавляет и убирает патент', (tester) async {
       await openDetails(tester);
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.star_border), findsOneWidget);
+      expect(find.byIcon(Icons.star_outline_rounded), findsOneWidget);
       expect(find.byTooltip('Добавить в избранное'), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.star_border));
+      await tester.tap(find.byIcon(Icons.star_outline_rounded));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.star), findsOneWidget);
+      expect(find.byIcon(Icons.star_rounded), findsOneWidget);
       expect(find.byTooltip('Убрать из избранного'), findsOneWidget);
       expect(favorites.store.keys.toList(), ['RU2701234C1_20190925']);
       expect(favorites.store.values.single.title, 'Способ обработки данных');
 
-      await tester.tap(find.byIcon(Icons.star));
+      await tester.tap(find.byIcon(Icons.star_rounded));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.star_border), findsOneWidget);
+      expect(find.byIcon(Icons.star_outline_rounded), findsOneWidget);
       expect(favorites.store, isEmpty);
     });
 
-    testWidgets('патент, уже лежащий в избранном, открывается с закрашенной звездой', (tester) async {
-      favorites.store['RU2701234C1_20190925'] = makeFavorite();
-      await openDetails(tester);
-      await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.star), findsOneWidget);
-    });
+    testWidgets(
+      'патент, уже лежащий в избранном, открывается с закрашенной звездой',
+      (tester) async {
+        favorites.store['RU2701234C1_20190925'] = makeFavorite();
+        await openDetails(tester);
+        await tester.pumpAndSettle();
+        expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+      },
+    );
 
-    testWidgets('цвет звезды: янтарный для избранного, серый для остальных', (tester) async {
+    testWidgets('цвет звезды: янтарный для избранного, серый для остальных', (
+      tester,
+    ) async {
       await openDetails(tester);
       await tester.pumpAndSettle();
-      expect(tester.widget<Icon>(find.byIcon(Icons.star_border)).color, Colors.grey);
-      await tester.tap(find.byIcon(Icons.star_border));
+      expect(
+        tester.widget<Icon>(find.byIcon(Icons.star_outline_rounded)).color,
+        AppColors.brand,
+      );
+      await tester.tap(find.byIcon(Icons.star_outline_rounded));
       await tester.pumpAndSettle();
-      expect(tester.widget<Icon>(find.byIcon(Icons.star)).color, Colors.amber);
+      expect(
+        tester.widget<Icon>(find.byIcon(Icons.star_rounded)).color,
+        AppColors.amber,
+      );
     });
   });
 
@@ -192,7 +239,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Выбранный патент'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.arrow_back_ios));
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
     await tester.pumpAndSettle();
     expect(find.text('Выбранный патент'), findsNothing);
   });

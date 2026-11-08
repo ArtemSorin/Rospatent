@@ -32,3 +32,14 @@ List<String> splitNames(String? input) {
       .where((e) => e.isNotEmpty)
       .toList();
 }
+
+/// 1234567 -> «1 234 567» (с неразрывными пробелами).
+String formatInt(int value) {
+  final digits = value.abs().toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < digits.length; i++) {
+    if (i > 0 && (digits.length - i) % 3 == 0) buffer.write('\u00A0');
+    buffer.write(digits[i]);
+  }
+  return value < 0 ? '-$buffer' : buffer.toString();
+}

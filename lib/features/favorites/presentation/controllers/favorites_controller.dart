@@ -6,12 +6,10 @@ import 'package:rospatent/features/favorites/domain/usecases/restore_favorite.da
 
 class FavoritesController extends ChangeNotifier {
   FavoritesController({
-    required GetFavorites getFavorites,
-    required RemoveFavorite removeFavorite,
-    required RestoreFavorite restoreFavorite,
-  }) : _getFavorites = getFavorites,
-       _removeFavorite = removeFavorite,
-       _restoreFavorite = restoreFavorite;
+    required this._getFavorites,
+    required this._removeFavorite,
+    required this._restoreFavorite,
+  });
 
   final GetFavorites _getFavorites;
   final RemoveFavorite _removeFavorite;

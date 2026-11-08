@@ -1,6 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rospatent/core/utils/text_utils.dart';
-import 'package:rospatent/core/widgets/custom_app_bar.dart';
+import 'package:rospatent/app/app_scope.dart';
+import 'package:rospatent/core/theme/app_colors.dart';
+import 'package:rospatent/core/theme/app_text.dart';
+import 'package:rospatent/core/widgets/hero_header.dart';
 import 'package:rospatent/features/patents/domain/entities/search_query.dart';
 
 import '../widgets/home/date_picker_row.dart';
@@ -69,6 +75,10 @@ class _HomePageState extends State<HomePage> {
       publishedFrom: from,
       publishedTo: to,
     );
+    // запоминаем запрос для раздела «История»; ошибки хранилища поиску не мешают
+    unawaited(
+      AppScope.of(context).addSearchHistory(query).catchError((_) {}),
+    );
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => SearchResultsPage(query: query)),
@@ -78,48 +88,88 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        title: "Роспатент",
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.account_circle_outlined),
-          color: Colors.blueAccent,
-          onPressed: () {},
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            HeroHeader(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.account_balance_outlined,
+                          size: 22,
+                          color: AppColors.brand,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Роспатент',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      HeroIconButton(
+                        icon: Icons.notifications_none_rounded,
+                        tooltip: 'Уведомления',
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  const Text('Поиск патентов', style: AppText.onDarkTitle),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Изобретения, полезные модели и промышленные образцы',
+                    style: AppText.onDarkBody,
+                  ),
+                  const SizedBox(height: 20),
+                  SearchInput(controller: _searchController, onSubmitted: _search),
+                ],
+              ),
+            ),
+            SortSection(
+              value: _sort,
+              onChanged: (value) => setState(() => _sort = value),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+              child: Column(
+                children: [
+                  DatePickerRow(
+                    from: _from,
+                    to: _to,
+                    onPickFrom: () => _pickDate(isFrom: true),
+                    onPickTo: () => _pickDate(isFrom: false),
+                    onClearFrom: () => setState(() => _from = null),
+                    onClearTo: () => setState(() => _to = null),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFieldsSection(
+                    patenteeController: _patenteeController,
+                    authorsController: _authorsController,
+                  ),
+                  const SizedBox(height: 20),
+                  SearchButton(onPressed: _search),
+                ],
+              ),
+            ),
+          ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none),
-            color: Colors.blueAccent,
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          SearchInput(controller: _searchController, onSubmitted: _search),
-          const SizedBox(height: 16),
-          SortSection(
-            value: _sort,
-            onChanged: (value) => setState(() => _sort = value),
-          ),
-          const SizedBox(height: 16),
-          DatePickerRow(
-            from: _from,
-            to: _to,
-            onPickFrom: () => _pickDate(isFrom: true),
-            onPickTo: () => _pickDate(isFrom: false),
-            onClearFrom: () => setState(() => _from = null),
-            onClearTo: () => setState(() => _to = null),
-          ),
-          const SizedBox(height: 16),
-          TextFieldsSection(
-            patenteeController: _patenteeController,
-            authorsController: _authorsController,
-          ),
-          const SizedBox(height: 24),
-          SearchButton(onPressed: _search),
-        ],
       ),
     );
   }

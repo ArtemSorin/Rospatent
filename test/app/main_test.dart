@@ -6,7 +6,9 @@ import 'package:rospatent/main.dart' as entry;
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('main() запускает приложение с зависимостями в AppScope', (tester) async {
+  testWidgets('main() запускает приложение с зависимостями в AppScope', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     entry.main();
     await tester.pump();
@@ -14,6 +16,6 @@ void main() {
     expect(find.byType(AppScope), findsOneWidget);
     expect(find.byType(App), findsOneWidget);
     expect(find.byType(MainShell), findsOneWidget);
-    expect(find.text('Поиск по тексту'), findsOneWidget);
+    expect(find.text('Поиск по тексту патентов'), findsOneWidget);
   });
 }

@@ -12,7 +12,6 @@ void main() {
 
   testWidgets('показывает название и описание приложения', (tester) async {
     await openAbout(tester);
-    expect(find.text('О приложении'), findsOneWidget);
     expect(find.text('Роспатент'), findsOneWidget);
     expect(find.text('Поиск патентов в базе данных Роспатента'), findsOneWidget);
     expect(find.textContaining('Это приложение помогает вам в поиске патентов'), findsOneWidget);
@@ -31,8 +30,8 @@ void main() {
       expect(find.text(title), findsOneWidget, reason: title);
     }
     for (final icon in [
-      Icons.search_outlined,
-      Icons.star_outline,
+      Icons.search_rounded,
+      Icons.star_outline_rounded,
       Icons.description_outlined,
       Icons.notifications_active_outlined,
     ]) {
@@ -49,8 +48,7 @@ void main() {
 
   testWidgets('кнопки в шапке нажимаются без ошибок', (tester) async {
     await openAbout(tester);
-    await tester.tap(find.byIcon(Icons.account_circle_outlined));
-    await tester.tap(find.byIcon(Icons.notifications_none));
+    await tester.tap(find.byIcon(Icons.notifications_none_rounded));
     expect(tester.takeException(), isNull);
   });
 }

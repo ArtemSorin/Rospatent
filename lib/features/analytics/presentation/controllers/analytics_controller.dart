@@ -9,15 +9,13 @@ import 'package:rospatent/features/patents/domain/usecases/search_patents.dart';
 /// расширенную выборку (до [sampleLimit] патентов) и пересчитывает.
 class AnalyticsController extends ChangeNotifier {
   AnalyticsController({
-    required ComputePatentStats computeStats,
-    required SearchPatents searchPatents,
+    required this._computeStats,
+    required this._searchPatents,
     required this.query,
     required List<PatentSummary> pageItems,
     required int totalFound,
     this.sampleLimit = 100,
-  }) : _computeStats = computeStats,
-       _searchPatents = searchPatents,
-       _pageItems = pageItems,
+  }) : _pageItems = pageItems,
        _totalFound = totalFound {
     stats = _computeStats(pageItems, totalFound);
   }

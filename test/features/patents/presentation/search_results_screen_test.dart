@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rospatent/core/error/failure.dart';
+import 'package:rospatent/core/widgets/custom_app_bar.dart';
 import 'package:rospatent/core/widgets/page_paginator.dart';
 import 'package:rospatent/features/analytics/presentation/screens/analyze_screen.dart';
 import 'package:rospatent/features/patents/domain/entities/search_page.dart';
@@ -31,14 +32,18 @@ void main() {
   setUp(() => patents = FakePatentRepository(total: 25));
 
   group('загрузка', () {
-    testWidgets('первый запрос: индикатор, пагинатор и аналитика недоступны', (tester) async {
+    testWidgets('первый запрос: индикатор, пагинатор и аналитика недоступны', (
+      tester,
+    ) async {
       final gate = Completer<SearchPage>();
       patents.searchHandler = (q, p, s) => gate.future;
       await openResults(tester);
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.byType(PagePaginator), findsNothing);
-      final analytics = tester.widget<IconButton>(find.widgetWithIcon(IconButton, Icons.data_usage_outlined));
+      final analytics = tester.widget<AppBarButton>(
+        find.widgetWithIcon(AppBarButton, Icons.bar_chart_rounded),
+      );
       expect(analytics.onPressed, isNull);
 
       gate.complete(makePage());
@@ -46,13 +51,16 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
-    testWidgets('после загрузки видны карточки, заголовок и пагинатор', (tester) async {
+    testWidgets('после загрузки видны карточки, заголовок и пагинатор', (
+      tester,
+    ) async {
       await openResults(tester);
       await tester.pumpAndSettle();
 
       expect(find.text('Найденные патенты'), findsOneWidget);
       expect(find.byType(PatentCard), findsNWidgets(10));
-      expect(find.text('Найдено патентов: 25'), findsOneWidget);
+      expect(find.text('Найдено патентов'), findsOneWidget);
+      expect(find.text('25'), findsOneWidget);
       expect(find.text('стр. 1 из 3'), findsOneWidget);
       expect(find.byType(PagePaginator), findsOneWidget);
       expect(find.text('3'), findsOneWidget);
@@ -65,7 +73,7 @@ void main() {
       await openResults(tester);
       await tester.pumpAndSettle();
       expect(find.byType(PatentCard), findsNWidgets(5));
-      expect(find.byIcon(Icons.chevron_right), findsNothing);
+      expect(find.byType(PagePaginator), findsNothing);
       expect(find.textContaining('стр.'), findsNothing);
     });
 
@@ -73,9 +81,9 @@ void main() {
       patents.total = 0;
       await openResults(tester);
       await tester.pumpAndSettle();
-      expect(find.text('По вашему запросу ничего не найдено'), findsOneWidget);
+      expect(find.text('Ничего не найдено'), findsOneWidget);
       expect(find.byType(PatentCard), findsNothing);
-      expect(find.byIcon(Icons.search_off), findsOneWidget);
+      expect(find.byIcon(Icons.search_off_rounded), findsOneWidget);
     });
   });
 
@@ -86,7 +94,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Нет соединения с сервером'), findsOneWidget);
-      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      expect(find.byIcon(Icons.wifi_off_rounded), findsOneWidget);
       expect(find.byType(PagePaginator), findsNothing);
 
       patents.searchHandler = null;
@@ -96,11 +104,14 @@ void main() {
       expect(find.text('Нет соединения с сервером'), findsNothing);
     });
 
-    testWidgets('ошибка при смене страницы: список остаётся, показан баннер', (tester) async {
+    testWidgets('ошибка при смене страницы: список остаётся, показан баннер', (
+      tester,
+    ) async {
       await openResults(tester);
       await tester.pumpAndSettle();
 
-      patents.searchHandler = (q, p, s) => Future.error(const ServerFailure('Ошибка сервера (500)'));
+      patents.searchHandler = (q, p, s) =>
+          Future.error(const ServerFailure('Ошибка сервера (500)'));
       await tester.tap(find.text('2'));
       await tester.pumpAndSettle();
 
@@ -116,7 +127,9 @@ void main() {
   });
 
   group('пагинация', () {
-    testWidgets('нажатие на страницу загружает её и обновляет список', (tester) async {
+    testWidgets('нажатие на страницу загружает её и обновляет список', (
+      tester,
+    ) async {
       await openResults(tester);
       await tester.pumpAndSettle();
 
@@ -132,52 +145,76 @@ void main() {
     testWidgets('последняя страница содержит остаток', (tester) async {
       await openResults(tester);
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.tap(find.descendant(
+        of: find.byType(PagePaginator),
+        matching: find.byIcon(Icons.chevron_right_rounded),
+      ));
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.tap(find.descendant(
+        of: find.byType(PagePaginator),
+        matching: find.byIcon(Icons.chevron_right_rounded),
+      ));
       await tester.pumpAndSettle();
 
       expect(find.byType(PatentCard), findsNWidgets(5));
       expect(find.text('стр. 3 из 3'), findsOneWidget);
     });
 
-    testWidgets('пока страница грузится, видна полоска загрузки и пагинатор заблокирован', (tester) async {
-      await openResults(tester);
-      await tester.pumpAndSettle();
+    testWidgets(
+      'пока страница грузится, видна полоска загрузки и пагинатор заблокирован',
+      (tester) async {
+        await openResults(tester);
+        await tester.pumpAndSettle();
 
-      final gate = Completer<SearchPage>();
-      patents.searchHandler = (q, p, s) => gate.future;
-      await tester.tap(find.text('2'));
-      await tester.pump();
+        final gate = Completer<SearchPage>();
+        patents.searchHandler = (q, p, s) => gate.future;
+        await tester.tap(find.text('2'));
+        await tester.pump();
 
-      expect(find.byType(LinearProgressIndicator), findsOneWidget);
-      expect(anyText('Патент №1.'), findsWidgets); // старый список на месте
+        expect(find.byType(LinearProgressIndicator), findsOneWidget);
+        expect(anyText('Патент №1.'), findsWidgets); // старый список на месте
 
-      await tester.tap(find.text('3'));
-      await tester.pump();
-      expect(patents.searchCalls.length, 2); // клик по заблокированному пагинатору проигнорирован
+        await tester.tap(find.text('3'));
+        await tester.pump();
+        expect(
+          patents.searchCalls.length,
+          2,
+        ); // клик по заблокированному пагинатору проигнорирован
 
-      gate.complete(makePage(page: 1));
-      await tester.pumpAndSettle();
-      expect(find.byType(LinearProgressIndicator), findsNothing);
-      expect(anyText('Патент №11.'), findsWidgets);
-    });
+        gate.complete(makePage(page: 1));
+        await tester.pumpAndSettle();
+        expect(find.byType(LinearProgressIndicator), findsNothing);
+        expect(anyText('Патент №11.'), findsWidgets);
+      },
+    );
 
-    testWidgets('после перехода на страницу список прокручивается наверх', (tester) async {
+    testWidgets('после перехода на страницу список прокручивается наверх', (
+      tester,
+    ) async {
       await openResults(tester, tall: false);
       await tester.pumpAndSettle();
 
       await tester.drag(find.byType(ListView), const Offset(0, -400));
       await tester.pumpAndSettle();
-      final scrollable = tester.state<ScrollableState>(find.byType(Scrollable).first);
+      final scrollable = tester.state<ScrollableState>(
+        find.byType(Scrollable).first,
+      );
       expect(scrollable.position.pixels, greaterThan(0));
 
       await tester.tap(find.text('2'));
       await tester.pumpAndSettle();
-      expect(tester.state<ScrollableState>(find.byType(Scrollable).first).position.pixels, 0);
+      expect(
+        tester
+            .state<ScrollableState>(find.byType(Scrollable).first)
+            .position
+            .pixels,
+        0,
+      );
     });
 
-    testWidgets('ошибка загрузки страницы не сбрасывает прокрутку', (tester) async {
+    testWidgets('ошибка загрузки страницы не сбрасывает прокрутку', (
+      tester,
+    ) async {
       await openResults(tester, tall: false);
       await tester.pumpAndSettle();
       await tester.drag(find.byType(ListView), const Offset(0, -400));
@@ -187,7 +224,13 @@ void main() {
       await tester.tap(find.text('2'));
       await tester.pumpAndSettle();
 
-      expect(tester.state<ScrollableState>(find.byType(Scrollable).first).position.pixels, greaterThan(0));
+      expect(
+        tester
+            .state<ScrollableState>(find.byType(Scrollable).first)
+            .position
+            .pixels,
+        greaterThan(0),
+      );
     });
   });
 
@@ -208,20 +251,26 @@ void main() {
       await openResults(tester);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.data_usage_outlined));
+      await tester.tap(find.byIcon(Icons.bar_chart_rounded));
       await tester.pumpAndSettle();
 
       expect(find.byType(AnalyzePage), findsOneWidget);
       expect(find.text('Аналитика'), findsOneWidget);
     });
 
-    testWidgets('кнопка «назад» возвращает на предыдущий экран', (tester) async {
+    testWidgets('кнопка «назад» возвращает на предыдущий экран', (
+      tester,
+    ) async {
       useTallScreen(tester);
-      await pumpPushed(tester, () => const SearchResultsPage(query: query), deps: buildDeps(patents: patents));
+      await pumpPushed(
+        tester,
+        () => const SearchResultsPage(query: query),
+        deps: buildDeps(patents: patents),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Найденные патенты'), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.arrow_back_ios));
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded).last);
       await tester.pumpAndSettle();
       expect(find.text('Найденные патенты'), findsNothing);
       expect(find.text('open'), findsOneWidget);
@@ -232,9 +281,14 @@ void main() {
     final gate = Completer<SearchPage>();
     patents.searchHandler = (q, p, s) => gate.future;
     useTallScreen(tester);
-    await pumpPushed(tester, () => const SearchResultsPage(query: query), deps: buildDeps(patents: patents));
+    await pumpPushed(
+      tester,
+      () => const SearchResultsPage(query: query),
+      deps: buildDeps(patents: patents),
+    );
     await tester.pump(const Duration(milliseconds: 400));
-    await tester.tap(find.byIcon(Icons.arrow_back_ios));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded).last);
     await tester.pumpAndSettle();
     gate.complete(makePage());
     await tester.pumpAndSettle();

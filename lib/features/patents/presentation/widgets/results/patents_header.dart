@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:rospatent/core/theme/app_text.dart';
+import 'package:rospatent/core/utils/text_utils.dart';
+import 'package:rospatent/core/widgets/app_ui.dart';
 
 class PatentsHeader extends StatelessWidget {
   final int totalFound;
@@ -14,23 +17,23 @@ class PatentsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
-            child: Text(
-              "Найдено патентов: $totalFound",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Найдено патентов', style: AppText.caption),
+                const SizedBox(height: 2),
+                Text(formatInt(totalFound), style: AppText.h2),
+              ],
             ),
           ),
           if (totalPages > 1)
-            Text(
-              "стр. ${currentPage + 1} из $totalPages",
-              style: const TextStyle(fontSize: 13, color: Colors.black54),
-            ),
+            AppTag('стр. ${currentPage + 1} из ${formatInt(totalPages)}'),
         ],
       ),
     );

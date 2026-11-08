@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rospatent/core/theme/app_colors.dart';
 import 'package:rospatent/features/patents/presentation/widgets/results/patent_card.dart';
 import 'package:tag_highlight_text/tag_highlight_text.dart';
 
@@ -13,7 +14,7 @@ void main() {
 
     expect(find.byType(TagHighlightText), findsNWidgets(2));
     expect(find.text('Автор: Иванов И.И., Петров П.П.'), findsOneWidget);
-    expect(find.text('Язык: ru'), findsOneWidget);
+    expect(find.text('RU'), findsOneWidget);
     expect(find.text('МПК: G06F 17/30'), findsOneWidget);
   });
 
@@ -29,8 +30,8 @@ void main() {
     final title = tester.widget<Text>(find.text('обработки'));
     final description = tester.widget<Text>(find.text('способа'));
     expect(title.style!.fontWeight, FontWeight.bold);
-    expect(description.style!.fontWeight, FontWeight.normal);
-    expect(title.style!.color, Colors.white);
+    expect(description.style!.fontWeight, FontWeight.w600);
+    expect(title.style!.color, AppColors.brand);
   });
 
   testWidgets('теги, кроме <em>, не создают плашек и не ломают карточку', (tester) async {
